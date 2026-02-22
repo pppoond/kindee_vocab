@@ -1,0 +1,57 @@
+# Goal Description
+Create a Next.js application for a vocabulary learning app (Harvard 3000 words). Key features:
+- Display vocabulary (word, type, example, etc.)
+- User authentication and separation
+- Ability to add new words
+- A mini-game to review daily vocabulary in a fun way (e.g., Save the Princess from a Beast format).
+- Use Supabase for database and auth
+- Use Tailwind CSS and Shadcn-ui for premium aesthetics
+
+## User Review Required
+> [!IMPORTANT]
+> **Supabase Configuration Needed**
+> 1. You will need to create a project on Supabase (https://supabase.com).
+> 2. Then provide the `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to be placed in `.env.local`.
+> 
+> Also, could you confirm if you prefer **Shadcn UI** for the components, as it works excellently with Next.js and Tailwind? 
+
+## Proposed Changes
+
+### Configuration
+#### [NEW] .env.local
+For Supabase keys
+
+#### [MODIFY] tailwind.config.ts / globals.css
+Add modern, premium color palettes (e.g., sleek dark mode, vibrant accents) and animations for the mini-game.
+
+### Database & Auth (Supabase)
+#### [NEW] src/lib/supabase.ts
+Initialize Supabase client.
+Schema to be created in Supabase SQL Editor:
+- `vocabularies` table (id, user_id, word, type, meaning, example, memorized, created_at)
+- Row Level Security (RLS) to ensure users only see their own words
+
+### UI Components & Features
+#### [NEW] src/components/ui/*
+Initialize Shadcn-ui components (Button, Input, Card, Dialog).
+
+#### [NEW] src/app/login/page.tsx
+Authentication page for logging in/registering.
+
+#### [NEW] src/app/page.tsx
+Dashboard. Show vocabulary list, add capability.
+
+#### [NEW] src/app/minigame/page.tsx
+Mini-game interface 'Save the Princess'.
+Logic: Answer vocabulary flashcards correctly to attack the beast, answer wrong and the beast attacks.
+
+## Verification Plan
+
+### Automated Tests
+Currently not setting up Jest/Cypress. Verifying functional correctness on Next.js dev server.
+
+### Manual Verification
+1. `npm run dev` to start server
+2. Go to `/login`, test user registration and login
+3. Go to dashboard, add a vocabulary word. Verify it updates in Supabase and list.
+4. Go to `/minigame` and test the interaction.

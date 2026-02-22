@@ -1,0 +1,363 @@
+"use client"
+
+import { useEffect, useState, useCallback } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+
+type Vocabulary = {
+  id: string
+  word: string
+  type: string
+  meaning: string
+  example: string
+  memorized: boolean
+  created_at: string
+}
+
+const WORD_TYPES = [
+  "Noun",
+  "Verb",
+  "Adjective",
+  "Adverb",
+  "Pronoun",
+  "Preposition",
+  "Conjunction",
+  "Interjection"
+]
+
+const PAGE_SIZE = 5
+
+export default function Dashboard() {
+  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [open, setOpen] = useState(false)
+  const [editingWord, setEditingWord] = useState<Vocabulary | null>(null)
+  const [formData, setFormData] = useState({ word: "", type: "", meaning: "", example: "" })
+  const [saving, setSaving] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  
+  const supabase = createClient()
+  const router = useRouter()
+
+  const fetchVocabularies = useCallback(async (page: number) => {
+    setLoading(true)
+    const from = (page - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    const { data, error, count } = await supabase
+      .from("vocabularies")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to)
+    
+    if (error) {
+      console.error(error)
+    } else {
+      setVocabularies(data || [])
+      if (count !== null) setTotalCount(count)
+    }
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/login")
+        return
+      }
+      setUser(user)
+      fetchVocabularies(currentPage)
+    }
+    getUser()
+  }, [currentPage, fetchVocabularies, router, supabase.auth])
+
+  const handleOpenAdd = () => {
+    setEditingWord(null)
+    setFormData({ word: "", type: "", meaning: "", example: "" })
+    setOpen(true)
+  }
+
+  const handleOpenEdit = (v: Vocabulary) => {
+    setEditingWord(v)
+    setFormData({ 
+      word: v.word, 
+      type: v.type || "", 
+      meaning: v.meaning, 
+      example: v.example || "" 
+    })
+    setOpen(true)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+
+    try {
+      if (editingWord) {
+        const { error } = await supabase
+          .from("vocabularies")
+          .update({ 
+            word: formData.word, 
+            type: formData.type, 
+            meaning: formData.meaning, 
+            example: formData.example 
+          })
+          .eq("id", editingWord.id)
+        
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from("vocabularies")
+          .insert([
+            { 
+              ...formData,
+              user_id: user.id 
+            }
+          ])
+        
+        if (error) throw error
+      }
+      
+      setOpen(false)
+      fetchVocabularies(currentPage)
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const toggleMemorized = async (id: string, current: boolean) => {
+    const { error } = await supabase
+      .from("vocabularies")
+      .update({ memorized: !current })
+      .eq("id", id)
+    
+    if (!error) {
+      setVocabularies(vocabularies.map(v => v.id === id ? { ...v, memorized: !current } : v))
+    }
+  }
+
+  const deleteWord = async (id: string) => {
+    if (!confirm("Are you sure?")) return
+    const { error } = await supabase
+      .from("vocabularies")
+      .delete()
+      .eq("id", id)
+    
+    if (!error) {
+      fetchVocabularies(currentPage)
+    }
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/login")
+  }
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE)
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-md dark:bg-black/80">
+        <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary p-2 rounded-lg">
+              <BookOpen className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight">Kindee Vocab</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/minigame">
+              <Button variant="outline" className="gap-2">
+                <Gamepad2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Play Game</span>
+              </Button>
+            </Link>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+            <CardHeader className="pb-2">
+              <CardDescription>Total Vocabulary</CardDescription>
+              <CardTitle className="text-4xl">{totalCount}</CardTitle>
+            </CardHeader>
+          </Card>
+          
+          <div className="hidden sm:block" />
+
+          <Button 
+            className="h-auto flex-col items-center justify-center gap-2 py-6 text-lg sm:col-span-2 lg:col-span-1"
+            onClick={handleOpenAdd}
+          >
+            <Plus className="h-8 w-8" />
+            Add New Word
+          </Button>
+        </div>
+
+        {/* Add/Edit Dialog */}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingWord ? "Edit Vocabulary" : "Add New Vocabulary"}</DialogTitle>
+              <DialogDescription>
+                Help yourself remember more words.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="word">Word</Label>
+                <Input 
+                  id="word" 
+                  value={formData.word} 
+                  onChange={e => setFormData({ ...formData, word: e.target.value })}
+                  placeholder="e.g. Persistence" 
+                  required 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="type">Type</Label>
+                <Select 
+                  value={formData.type} 
+                  onValueChange={(value) => setFormData({ ...formData, type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {WORD_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="meaning">Meaning</Label>
+                <Input 
+                  id="meaning" 
+                  value={formData.meaning} 
+                  onChange={e => setFormData({ ...formData, meaning: e.target.value })}
+                  placeholder="e.g. The quality that allows someone to continue doing something" 
+                  required 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="example">Example Sentence</Label>
+                <Input 
+                  id="example" 
+                  value={formData.example} 
+                  onChange={e => setFormData({ ...formData, example: e.target.value })}
+                  placeholder="e.g. Her persistence paid off when she finally won." 
+                />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Saving..." : editingWord ? "Update Word" : "Save Word"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* List */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Your Word List</h2>
+          </div>
+          {loading ? (
+            <p className="text-muted-foreground">Loading words...</p>
+          ) : vocabularies.length === 0 ? (
+            <Card className="p-12 text-center border-dashed">
+              <CardDescription>No words added yet. Start by adding your first word!</CardDescription>
+            </Card>
+          ) : (
+            <>
+              <div className="grid gap-4">
+                {vocabularies.map((v) => (
+                  <Card key={v.id} className={`transition-all ${v.memorized ? 'opacity-60 grayscale' : 'hover:border-primary/50 shadow-sm'}`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div className="flex items-center gap-3">
+                        <CardTitle className="text-xl">{v.word}</CardTitle>
+                        {v.type && <Badge variant="secondary">{v.type}</Badge>}
+                        {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className={v.memorized ? "text-zinc-400" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
+                          onClick={() => toggleMemorized(v.id, v.memorized)}
+                        >
+                          {v.memorized ? "Unmark" : "Mark Memorized"}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-blue-600" onClick={() => handleOpenEdit(v)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-red-600" onClick={() => deleteWord(v.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">{v.meaning}</p>
+                      {v.example && (
+                        <p className="text-sm text-zinc-500 italic">"{v.example}"</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-8">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-medium">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </main>
+    </div>
+  )
+}
