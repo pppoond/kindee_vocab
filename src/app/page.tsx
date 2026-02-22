@@ -9,7 +9,13 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -297,11 +303,17 @@ export default function Dashboard() {
               <div className="grid gap-4">
                 {vocabularies.map((v) => (
                   <Card key={v.id} className={`transition-all ${v.memorized ? 'opacity-60 grayscale' : 'hover:border-primary/50 shadow-sm'}`}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <div className="flex items-center gap-3">
-                        <CardTitle className="text-xl">{v.word}</CardTitle>
-                        {v.type && <Badge variant="secondary">{v.type}</Badge>}
-                        {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
+                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-3">
+                          <CardTitle className="text-xl">{v.word}</CardTitle>
+                          {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
+                        </div>
+                        {v.type && (
+                          <div className="flex">
+                            <Badge variant="secondary" className="text-xs">{v.type}</Badge>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button 
@@ -312,12 +324,23 @@ export default function Dashboard() {
                         >
                           {v.memorized ? "Unmark" : "Mark Memorized"}
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-blue-600" onClick={() => handleOpenEdit(v)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-red-600" onClick={() => deleteWord(v.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-zinc-400">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleOpenEdit(v)} className="gap-2">
+                              <Pencil className="h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deleteWord(v.id)} className="gap-2 text-red-600 focus:text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </CardHeader>
                     <CardContent>

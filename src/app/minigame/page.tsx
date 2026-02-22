@@ -119,7 +119,7 @@ export default function MiniGame() {
       <div className="p-4 flex items-center justify-between z-10">
         <Link href="/">
           <Button variant="ghost" className="text-zinc-400 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Dashboard</span>
           </Button>
         </Link>
         <div className="flex gap-4">
