@@ -114,7 +114,7 @@ export default function MiniGame() {
   if (loading) return <div className="flex min-h-screen items-center justify-center">Loading game...</div>
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-zinc-950 text-white overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-10">
         <Link href="/">
@@ -138,12 +138,12 @@ export default function MiniGame() {
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
         {/* Battle Arena */}
-        <div className="w-full max-w-4xl grid grid-cols-2 gap-8 items-center mb-12">
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 items-center mb-8 md:mb-12">
           {/* Player Side */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${isAttacking ? 'translate-x-20 scale-110' : ''}`}>
+          <div className={`flex flex-col items-center transition-transform duration-300 ${isAttacking ? 'translate-x-10 md:translate-x-20 scale-110' : ''}`}>
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <Swords className="h-12 w-12 text-white" />
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+                <Swords className="h-10 w-10 md:h-12 md:w-12 text-white" />
               </div>
               {isAttacking && (
                 <Sparkles className="absolute -top-4 -right-4 h-8 w-8 text-yellow-400 animate-pulse" />
@@ -153,10 +153,10 @@ export default function MiniGame() {
           </div>
 
           {/* Beast Side */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${beastAttacking ? '-translate-x-20 scale-110' : ''} ${beastHp === 0 ? 'opacity-0 scale-50' : ''}`}>
+          <div className={`flex flex-col items-center transition-transform duration-300 ${beastAttacking ? '-translate-x-10 md:-translate-x-20 scale-110' : ''} ${beastHp === 0 ? 'opacity-0 scale-50' : ''}`}>
             <div className="relative">
-              <div className="w-48 h-48 rounded-2xl bg-zinc-900 border-2 border-red-900/50 flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.2)]">
-                <div className="text-8xl">👹</div>
+              <div className="w-32 h-32 md:w-48 md:h-48 rounded-2xl bg-zinc-900 border-2 border-red-900/50 flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.2)]">
+                <div className="text-6xl md:text-8xl">👹</div>
               </div>
               <div className="absolute -top-6 left-0 right-0 flex flex-col items-center">
                 <span className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Ancient Beast</span>
@@ -181,16 +181,16 @@ export default function MiniGame() {
               <div className="bg-primary/10 p-2 text-center border-b border-zinc-800">
                 <Badge variant="outline" className="text-zinc-400 border-zinc-700">Choose the correct meaning</Badge>
               </div>
-              <CardHeader className="text-center pt-8 pb-4">
-                <CardTitle className="text-5xl font-black tracking-tight text-white mb-2">{currentWord?.word}</CardTitle>
-                <p className="text-zinc-500 italic">{currentWord?.type}</p>
+              <CardHeader className="text-center pt-6 md:pt-8 pb-4">
+                <CardTitle className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">{currentWord?.word}</CardTitle>
+                <p className="text-zinc-500 italic text-sm md:text-base">{currentWord?.type}</p>
               </CardHeader>
               <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {options.map((option, idx) => (
                   <Button
                     key={idx}
                     variant="outline"
-                    className={`h-auto py-4 px-6 text-left justify-start border-zinc-800 bg-zinc-950 hover:bg-zinc-800 hover:text-white transition-all ${feedback ? 'pointer-events-none' : ''}`}
+                    className={`h-auto py-4 px-6 text-left justify-start border-zinc-800 bg-zinc-950 text-white hover:bg-zinc-800 transition-all ${feedback ? 'pointer-events-none' : ''}`}
                     onClick={() => handleAnswer(option)}
                   >
                     <span className="text-zinc-600 mr-3 font-mono">{String.fromCharCode(65 + idx)}.</span>
@@ -208,15 +208,15 @@ export default function MiniGame() {
             <div className="text-center animate-in zoom-in duration-500">
               {gameState === "won" ? (
                 <>
-                  <Trophy className="h-24 w-24 text-yellow-500 mx-auto mb-6" />
-                  <h2 className="text-6xl font-black mb-4">VICTORY!</h2>
-                  <p className="text-xl text-zinc-400 mb-8">The Princess is safe, and your vocabulary is stronger!</p>
+                  <Trophy className="h-16 w-16 md:h-24 md:w-24 text-yellow-500 mx-auto mb-4 md:mb-6" />
+                  <h2 className="text-4xl md:text-6xl font-black mb-4">VICTORY!</h2>
+                  <p className="text-lg md:text-xl text-zinc-400 mb-6 md:mb-8">The Princess is safe, and your vocabulary is stronger!</p>
                 </>
               ) : (
                 <>
-                  <ShieldAlert className="h-24 w-24 text-red-600 mx-auto mb-6" />
-                  <h2 className="text-6xl font-black mb-4">DEFEATED</h2>
-                  <p className="text-xl text-zinc-400 mb-8">The beast was too strong this time. Keep practicing!</p>
+                  <ShieldAlert className="h-16 w-16 md:h-24 md:w-24 text-red-600 mx-auto mb-4 md:mb-6" />
+                  <h2 className="text-4xl md:text-6xl font-black mb-4">DEFEATED</h2>
+                  <p className="text-lg md:text-xl text-zinc-400 mb-6 md:mb-8">The beast was too strong this time. Keep practicing!</p>
                 </>
               )}
               <div className="flex gap-4 justify-center">
