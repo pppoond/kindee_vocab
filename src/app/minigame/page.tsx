@@ -12,8 +12,8 @@ import { useRouter } from "next/navigation"
 // GIF Assets (Replace these URLs with your own GIF links)
 const ASSETS = {
   hero: {
-    idle: "https://placehold.co/256x256/3b82f6/ffffff?text=Hero+Idle", 
-    attack: "https://placehold.co/256x256/1d4ed8/ffffff?text=Hero+Attack\n(Pung!)",
+    idle: "/assets/characters/knight/IDLE.png", // Local sprite sheet
+    attack: "/assets/characters/knight/ATTACK_1.png", // Local sprite sheet
     hurt: "https://placehold.co/256x256/93c5fd/ffffff?text=Hero+Hurt",
     win: "https://placehold.co/256x256/22c55e/ffffff?text=Hero+Win!\n(Yay!)", 
     lose: "https://placehold.co/256x256/94a3b8/ffffff?text=Hero+Defeated\n(RIP)",
@@ -32,6 +32,39 @@ type Vocabulary = {
   word: string
   meaning: string
   type: string
+}
+
+// Reusable Sprite Sheet Component using transform for responsive scaling
+const SpriteSheet = ({ 
+  src, 
+  frames, 
+  fps = 10, 
+  loop = true,
+  delay = 0,
+  className = "" 
+}: { 
+  src: string, 
+  frames: number, 
+  fps?: number, 
+  loop?: boolean,
+  delay?: number,
+  className?: string 
+}) => {
+  const duration = frames / fps;
+  return (
+    <div className={`overflow-hidden relative ${className}`}>
+      <img 
+        src={src} 
+        alt="sprite" 
+        className="max-w-none h-full absolute top-0 left-0 [image-rendering:pixelated]"
+        style={{
+          width: `${frames * 100}%`,
+          // Use 'end' for steps to ensure it doesn't jump out of bounds on 'forwards'
+          animation: `slide-sprite ${duration}s steps(${frames}, end) ${delay}s ${loop ? 'infinite' : '1 forwards'}`
+        }} 
+      />
+    </div>
+  )
 }
 
 export default function MiniGame() {
@@ -104,8 +137,11 @@ export default function MiniGame() {
     if (answer === currentWord?.meaning) {
       setFeedback({ type: "success", message: "Correct! You strike the beast!" })
       setHeroState("attack")
+      // Attack animation is 6 frames at 12fps = 0.5s duration. 
+      // Waiting exactly 0.5s for the attack animation to finish, then hurt the demon.
       setTimeout(() => {
         setDemonState("hurt")
+        setHeroState("idle") // Return to idle right after striking
         setBeastHp(prev => {
           const newHp = Math.max(0, prev - 25)
           if (newHp === 0) {
@@ -115,13 +151,14 @@ export default function MiniGame() {
           return newHp
         })
         setTimeout(() => {
-          setHeroState(beastHp - 25 <= 0 ? "win" : "idle")
-          if (beastHp > 25) {
+          if (beastHp - 25 <= 0) {
+             setHeroState("win") // Persist win state
+          } else {
              setDemonState("idle")
              setupTurn(vocabularies)
           }
         }, 1000)
-      }, 500)
+      }, 500) // Attack finishes at 500ms
     } else {
       setFeedback({ type: "error", message: `Wrong! The correct meaning was: ${currentWord?.meaning}` })
       
@@ -191,19 +228,37 @@ export default function MiniGame() {
         <div className="w-full max-w-4xl grid grid-cols-2 gap-2 md:gap-8 items-center mb-6 md:mb-12 px-2 sm:px-0">
           {/* Player Side */}
           <div className={`flex flex-col items-center transition-all duration-300 ${heroState === 'attack' ? 'translate-x-6 md:translate-x-20 scale-110' : ''} ${heroState === 'win' ? '-translate-y-10 animate-bounce' : ''} ${heroState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale translate-x-2 -rotate-6' : ''} ${heroState === 'lose' ? 'opacity-50 grayscale rotate-90 scale-75 blur-sm' : ''}`}>
-            <div className={`relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-end justify-center drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]`}>
-              <img 
-                src={ASSETS.hero[heroState === 'hurt' ? 'idle' : heroState]} 
-                alt="Hero" 
-                className={`w-full h-full object-contain [image-rendering:pixelated] ${heroState === 'hurt' ? 'animate-pulse' : ''}`}
-              />
+            <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-end justify-center drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]`}>
+              {heroState === 'idle' ? (
+                <SpriteSheet 
+                  src={ASSETS.hero.idle} 
+                  frames={7} 
+                  fps={8} 
+                  className="w-full aspect-[96/84]" 
+                />
+              ) : heroState === 'attack' ? (
+                <SpriteSheet 
+                  src={ASSETS.hero.attack} 
+                  frames={6} 
+                  fps={12} 
+                  loop={false} // เล่นรอบเดียวจบ
+                  // delay={0.1} // ถ้าต้องการเว้นระยะสักนิดก่อนฟัน (เช่น 0.1 วินาที)
+                  className="w-full aspect-[96/84]" 
+                />
+              ) : (
+                <img 
+                  src={ASSETS.hero[heroState === 'hurt' ? 'idle' : heroState]} 
+                  alt="Hero" 
+                  className={`w-full aspect-[96/84] object-contain [image-rendering:pixelated] ${heroState === 'hurt' ? 'animate-pulse' : ''}`}
+                />
+              )}
             </div>
             <p className="mt-2 md:mt-4 font-bold text-sm md:text-lg bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Hero</p>
           </div>
 
           {/* Beast Side */}
           <div className={`flex flex-col items-center transition-all duration-300 ${demonState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale -translate-x-2 rotate-6' : ''} ${demonState === 'attack' ? '-translate-x-6 md:-translate-x-20 scale-110' : ''} ${demonState === 'win' ? '-translate-y-10 animate-bounce scale-110 drop-shadow-[0_0_50px_rgba(220,38,38,0.8)]' : ''}`}>
-            <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-56 md:h-56 flex items-end justify-center drop-shadow-[0_0_25px_rgba(220,38,38,0.3)]`}>
+            <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-end justify-center drop-shadow-[0_0_25px_rgba(220,38,38,0.3)]`}>
               <img 
                 src={ASSETS.demon[demonState]} 
                 alt="Demon" 
