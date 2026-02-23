@@ -66,8 +66,15 @@ export default function MiniGame() {
     setCurrentWord(word)
 
     // Generate options
-    const others = list.filter(v => v.id !== word.id).map(v => v.meaning)
-    const shuffledOthers = others.sort(() => 0.5 - Math.random()).slice(0, 3)
+    // Filter out distractors that have the same word (to avoid ambiguity)
+    // and those that have the same meaning (to avoid duplicates)
+    const others = list
+      .filter(v => v.id !== word.id && v.word.toLowerCase() !== word.word.toLowerCase() && v.meaning !== word.meaning)
+      .map(v => v.meaning)
+    
+    // Get unique meanings from others
+    const uniqueOthers = Array.from(new Set(others))
+    const shuffledOthers = uniqueOthers.sort(() => 0.5 - Math.random()).slice(0, 3)
     const finalOptions = [...shuffledOthers, word.meaning].sort(() => 0.5 - Math.random())
     setOptions(finalOptions)
     setFeedback(null)
