@@ -5,9 +5,27 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Swords, Heart, ShieldAlert, Sparkles, Trophy } from "lucide-react"
+import { ArrowLeft, Heart, ShieldAlert, Trophy } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+
+// GIF Assets (Replace these URLs with your own GIF links)
+const ASSETS = {
+  hero: {
+    idle: "https://placehold.co/256x256/3b82f6/ffffff?text=Hero+Idle", 
+    attack: "https://placehold.co/256x256/1d4ed8/ffffff?text=Hero+Attack\n(Pung!)",
+    hurt: "https://placehold.co/256x256/93c5fd/ffffff?text=Hero+Hurt",
+    win: "https://placehold.co/256x256/22c55e/ffffff?text=Hero+Win!\n(Yay!)", 
+    lose: "https://placehold.co/256x256/94a3b8/ffffff?text=Hero+Defeated\n(RIP)",
+  },
+  demon: {
+    idle: "https://placehold.co/256x256/ef4444/ffffff?text=Demon+Idle",
+    attack: "https://placehold.co/256x256/dc2626/ffffff?text=Demon+Attack\n(Slash!)",
+    hurt: "https://placehold.co/256x256/b91c1c/ffffff?text=Demon+Hurt\n(Ouch!)",
+    win: "https://placehold.co/256x256/991b1b/ffffff?text=Demon+Victory\n(Haha!)",
+  },
+  background: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=1965&auto=format&fit=crop", // Fantasy-like forest background
+}
 
 type Vocabulary = {
   id: string
@@ -25,8 +43,8 @@ export default function MiniGame() {
   const [beastHp, setBeastHp] = useState(100)
   const [gameState, setGameState] = useState<"playing" | "won" | "lost">("playing")
   const [feedback, setFeedback] = useState<{ type: "success" | "error", message: string } | null>(null)
-  const [isAttacking, setIsAttacking] = useState(false)
-  const [beastAttacking, setBeastAttacking] = useState(false)
+  const [heroState, setHeroState] = useState<"idle" | "attack" | "hurt" | "win" | "lose">("idle")
+  const [demonState, setDemonState] = useState<"idle" | "attack" | "hurt" | "win">("idle")
 
   const supabase = createClient()
   const router = useRouter()
@@ -85,27 +103,50 @@ export default function MiniGame() {
 
     if (answer === currentWord?.meaning) {
       setFeedback({ type: "success", message: "Correct! You strike the beast!" })
-      setIsAttacking(true)
+      setHeroState("attack")
       setTimeout(() => {
+        setDemonState("hurt")
         setBeastHp(prev => {
           const newHp = Math.max(0, prev - 25)
-          if (newHp === 0) setGameState("won")
+          if (newHp === 0) {
+            setGameState("won")
+            setHeroState("win")
+          }
           return newHp
         })
-        setIsAttacking(false)
-        if (beastHp > 25) setTimeout(() => setupTurn(vocabularies), 1000)
+        setTimeout(() => {
+          setHeroState(beastHp - 25 <= 0 ? "win" : "idle")
+          if (beastHp > 25) {
+             setDemonState("idle")
+             setupTurn(vocabularies)
+          }
+        }, 1000)
       }, 500)
     } else {
       setFeedback({ type: "error", message: `Wrong! The correct meaning was: ${currentWord?.meaning}` })
-      setBeastAttacking(true)
+      
+      setDemonState("attack")
       setTimeout(() => {
+        setHeroState("hurt")
         setPlayerHp(prev => {
           const newHp = Math.max(0, prev - 20)
-          if (newHp === 0) setGameState("lost")
+          if (newHp === 0) {
+            setGameState("lost")
+            setHeroState("lose")
+            setDemonState("win")
+          }
           return newHp
         })
-        setBeastAttacking(false)
-        if (playerHp > 20) setTimeout(() => setupTurn(vocabularies), 1500)
+        setTimeout(() => {
+          if (playerHp - 20 <= 0) {
+             setHeroState("lose")
+             setDemonState("win")
+          } else {
+             setHeroState("idle")
+             setDemonState("idle")
+             setupTurn(vocabularies)
+          }
+        }, 1000)
       }, 500)
     }
   }
@@ -114,6 +155,8 @@ export default function MiniGame() {
     setPlayerHp(100)
     setBeastHp(100)
     setGameState("playing")
+    setHeroState("idle")
+    setDemonState("idle")
     setFeedback(null)
     loadGame()
   }
@@ -143,30 +186,31 @@ export default function MiniGame() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 relative z-10">
         {/* Battle Arena */}
         <div className="w-full max-w-4xl grid grid-cols-2 gap-2 md:gap-8 items-center mb-6 md:mb-12 px-2 sm:px-0">
           {/* Player Side */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${isAttacking ? 'translate-x-6 md:translate-x-20 scale-110' : ''}`}>
-            <div className="relative">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <Swords className="h-8 w-8 md:h-12 md:w-12 text-white" />
-              </div>
-              {isAttacking && (
-                <Sparkles className="absolute -top-4 -right-4 h-6 w-6 md:h-8 md:w-8 text-yellow-400 animate-pulse" />
-              )}
+          <div className={`flex flex-col items-center transition-all duration-300 ${heroState === 'attack' ? 'translate-x-6 md:translate-x-20 scale-110' : ''} ${heroState === 'win' ? '-translate-y-10 animate-bounce' : ''} ${heroState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale translate-x-2 -rotate-6' : ''} ${heroState === 'lose' ? 'opacity-50 grayscale rotate-90 scale-75 blur-sm' : ''}`}>
+            <div className={`relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-end justify-center drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]`}>
+              <img 
+                src={ASSETS.hero[heroState === 'hurt' ? 'idle' : heroState]} 
+                alt="Hero" 
+                className={`w-full h-full object-contain [image-rendering:pixelated] ${heroState === 'hurt' ? 'animate-pulse' : ''}`}
+              />
             </div>
-            <p className="mt-2 md:mt-4 font-bold text-sm md:text-lg">You</p>
+            <p className="mt-2 md:mt-4 font-bold text-sm md:text-lg bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Hero</p>
           </div>
 
           {/* Beast Side */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${beastAttacking ? '-translate-x-6 md:-translate-x-20 scale-110' : ''} ${beastHp === 0 ? 'opacity-0 scale-50' : ''}`}>
-            <div className="relative">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 rounded-2xl bg-zinc-900 border-2 border-red-900/50 flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.2)]">
-                <div className="text-4xl sm:text-6xl md:text-8xl">👹</div>
-              </div>
+          <div className={`flex flex-col items-center transition-all duration-300 ${demonState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale -translate-x-2 rotate-6' : ''} ${demonState === 'attack' ? '-translate-x-6 md:-translate-x-20 scale-110' : ''} ${demonState === 'win' ? '-translate-y-10 animate-bounce scale-110 drop-shadow-[0_0_50px_rgba(220,38,38,0.8)]' : ''}`}>
+            <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-56 md:h-56 flex items-end justify-center drop-shadow-[0_0_25px_rgba(220,38,38,0.3)]`}>
+              <img 
+                src={ASSETS.demon[demonState]} 
+                alt="Demon" 
+                className={`w-full h-full object-contain [image-rendering:pixelated] -scale-x-100 ${demonState === 'hurt' ? 'animate-pulse' : ''}`}
+              />
               <div className="absolute -top-5 left-0 right-0 flex flex-col items-center">
-                <span className="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">Ancient Beast</span>
+                <span className="text-[10px] md:text-xs text-white bg-black/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">Demon Lord</span>
                 <div className="w-[80%] md:w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                   <div 
                     className="h-full bg-orange-600 transition-all duration-300" 
@@ -174,9 +218,6 @@ export default function MiniGame() {
                   />
                 </div>
               </div>
-              {beastAttacking && (
-                <ShieldAlert className="absolute -top-4 -left-4 h-6 w-6 md:h-8 md:w-8 text-red-500 animate-bounce" />
-              )}
             </div>
           </div>
         </div>
@@ -238,8 +279,13 @@ export default function MiniGame() {
       </div>
 
       {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,#3b82f633_0%,transparent_50%)]" />
+      <div className="fixed inset-0 pointer-events-none -z-0">
+        <img 
+          src={ASSETS.background} 
+          alt="Battle Background" 
+          className="w-full h-full object-cover opacity-30 [image-rendering:pixelated]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-zinc-950/80" />
       </div>
     </div>
   )
