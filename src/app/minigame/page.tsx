@@ -145,29 +145,29 @@ export default function MiniGame() {
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
         {/* Battle Arena */}
-        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 items-center mb-8 md:mb-12">
+        <div className="w-full max-w-4xl grid grid-cols-2 gap-2 md:gap-8 items-center mb-6 md:mb-12 px-2 sm:px-0">
           {/* Player Side */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${isAttacking ? 'translate-x-10 md:translate-x-20 scale-110' : ''}`}>
+          <div className={`flex flex-col items-center transition-transform duration-300 ${isAttacking ? 'translate-x-6 md:translate-x-20 scale-110' : ''}`}>
             <div className="relative">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <Swords className="h-10 w-10 md:h-12 md:w-12 text-white" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+                <Swords className="h-8 w-8 md:h-12 md:w-12 text-white" />
               </div>
               {isAttacking && (
-                <Sparkles className="absolute -top-4 -right-4 h-8 w-8 text-yellow-400 animate-pulse" />
+                <Sparkles className="absolute -top-4 -right-4 h-6 w-6 md:h-8 md:w-8 text-yellow-400 animate-pulse" />
               )}
             </div>
-            <p className="mt-4 font-bold text-lg">You</p>
+            <p className="mt-2 md:mt-4 font-bold text-sm md:text-lg">You</p>
           </div>
 
           {/* Beast Side */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${beastAttacking ? '-translate-x-10 md:-translate-x-20 scale-110' : ''} ${beastHp === 0 ? 'opacity-0 scale-50' : ''}`}>
+          <div className={`flex flex-col items-center transition-transform duration-300 ${beastAttacking ? '-translate-x-6 md:-translate-x-20 scale-110' : ''} ${beastHp === 0 ? 'opacity-0 scale-50' : ''}`}>
             <div className="relative">
-              <div className="w-32 h-32 md:w-48 md:h-48 rounded-2xl bg-zinc-900 border-2 border-red-900/50 flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.2)]">
-                <div className="text-6xl md:text-8xl">👹</div>
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 rounded-2xl bg-zinc-900 border-2 border-red-900/50 flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.2)]">
+                <div className="text-4xl sm:text-6xl md:text-8xl">👹</div>
               </div>
-              <div className="absolute -top-6 left-0 right-0 flex flex-col items-center">
-                <span className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Ancient Beast</span>
-                <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+              <div className="absolute -top-5 left-0 right-0 flex flex-col items-center">
+                <span className="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">Ancient Beast</span>
+                <div className="w-[80%] md:w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                   <div 
                     className="h-full bg-orange-600 transition-all duration-300" 
                     style={{ width: `${beastHp}%` }} 
@@ -175,33 +175,33 @@ export default function MiniGame() {
                 </div>
               </div>
               {beastAttacking && (
-                <ShieldAlert className="absolute -top-4 -left-4 h-8 w-8 text-red-500 animate-bounce" />
+                <ShieldAlert className="absolute -top-4 -left-4 h-6 w-6 md:h-8 md:w-8 text-red-500 animate-bounce" />
               )}
             </div>
           </div>
         </div>
 
         {/* Game UI */}
-        <div className="w-full max-w-2xl z-10">
+        <div className="w-full max-w-2xl w-[95%] z-10 px-2 sm:px-0">
           {gameState === "playing" ? (
             <Card className="bg-zinc-900 border-zinc-800 shadow-2xl overflow-hidden">
               <div className="bg-primary/10 p-2 text-center border-b border-zinc-800">
-                <Badge variant="outline" className="text-zinc-400 border-zinc-700">Choose the correct meaning</Badge>
+                <Badge variant="outline" className="text-zinc-400 border-zinc-700 text-[10px] md:text-xs">Choose the correct meaning</Badge>
               </div>
-              <CardHeader className="text-center pt-6 md:pt-8 pb-4">
-                <CardTitle className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">{currentWord?.word}</CardTitle>
-                <p className="text-zinc-500 italic text-sm md:text-base">{currentWord?.type}</p>
+              <CardHeader className="text-center pt-4 md:pt-8 pb-2 md:pb-4 px-2 md:px-6">
+                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 break-words">{currentWord?.word}</CardTitle>
+                <p className="text-zinc-500 italic text-xs md:text-sm">{currentWord?.type}</p>
               </CardHeader>
-              <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CardContent className="p-3 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
                 {options.map((option, idx) => (
                   <Button
                     key={idx}
                     variant="outline"
-                    className={`h-auto py-4 px-6 text-left justify-start border-zinc-800 bg-zinc-950 text-white hover:bg-zinc-800 transition-all ${feedback ? 'pointer-events-none' : ''}`}
+                    className={`h-auto min-h-[50px] py-2 md:py-4 px-3 md:px-6 flex items-start text-left border-zinc-800 bg-zinc-950 text-white hover:bg-zinc-800 transition-all text-[11px] sm:text-sm whitespace-normal ${feedback ? 'pointer-events-none' : ''}`}
                     onClick={() => handleAnswer(option)}
                   >
-                    <span className="text-zinc-600 mr-3 font-mono">{String.fromCharCode(65 + idx)}.</span>
-                    {option}
+                    <span className="text-zinc-600 mr-2 md:mr-3 font-mono shrink-0">{String.fromCharCode(65 + idx)}.</span>
+                    <span className="break-words leading-tight md:leading-normal mt-0.5 md:mt-0">{option}</span>
                   </Button>
                 ))}
               </CardContent>

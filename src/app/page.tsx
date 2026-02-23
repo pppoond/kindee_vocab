@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 type Vocabulary = {
   id: string
@@ -194,6 +195,7 @@ export default function Dashboard() {
                 <span className="hidden sm:inline">Play Game</span>
               </Button>
             </Link>
+            <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
             </Button>
