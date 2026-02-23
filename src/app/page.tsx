@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -261,8 +262,9 @@ export default function Dashboard() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="meaning">Meaning</Label>
-                <Input 
+                <Textarea 
                   id="meaning" 
+                  rows={3}
                   value={formData.meaning} 
                   onChange={e => setFormData({ ...formData, meaning: e.target.value })}
                   placeholder="e.g. The quality that allows someone to continue doing something" 
@@ -271,8 +273,9 @@ export default function Dashboard() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="example">Example Sentence</Label>
-                <Input 
+                <Textarea 
                   id="example" 
+                  rows={3}
                   value={formData.example} 
                   onChange={e => setFormData({ ...formData, example: e.target.value })}
                   placeholder="e.g. Her persistence paid off when she finally won." 
