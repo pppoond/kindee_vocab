@@ -55,6 +55,34 @@ const ASSETS: Record<string, any> = {
   background: "/assets/backgrounds/forest.jpg", // Fantasy-like forest background
 }
 
+const getAllAssetUrls = () => {
+  const urls: string[] = [];
+  if (typeof ASSETS.background === 'string') urls.push(ASSETS.background);
+  
+  Object.values(ASSETS).forEach(value => {
+    if (value && typeof value === 'object' && 'animations' in value) {
+      Object.values(value.animations as Record<string, AnimationConfig>).forEach((anim) => {
+        if (anim && anim.src) urls.push(anim.src);
+      });
+    }
+  });
+  return Array.from(new Set(urls));
+};
+
+const preloadImages = (urls: string[]) => {
+  if (typeof window === 'undefined') return Promise.resolve();
+  return Promise.all(
+    urls.map((url) => {
+      return new Promise((resolve) => {
+        const img = new window.Image();
+        img.src = url;
+        img.onload = resolve;
+        img.onerror = resolve; // Continue even if an image fails to load
+      });
+    })
+  );
+};
+
 type Vocabulary = {
   id: string
   word: string
@@ -143,6 +171,9 @@ export default function MiniGame() {
       }
       return
     }
+
+    // Preload image assets to prevent stuttering
+    await preloadImages(getAllAssetUrls())
 
     setVocabularies(data)
     setupTurn(data)
