@@ -9,22 +9,50 @@ import { ArrowLeft, Heart, ShieldAlert, Trophy } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// GIF Assets (Replace these URLs with your own GIF links)
-const ASSETS = {
+type AnimationConfig = {
+  src: string;
+  frames: number;
+  fps: number;
+  loop: boolean;
+}
+
+type CharacterData = {
+  size: number;
+  flip?: boolean;
+  name: string;
+  maxHp: number;
+  animations: Record<string, AnimationConfig>;
+}
+
+const ASSETS: Record<string, any> = {
   hero: {
-    idle: "/assets/characters/knight/IDLE.png", // Local sprite sheet
-    attack: "/assets/characters/knight/ATTACK_1.png", // Local sprite sheet
-    hurt: "/assets/characters/knight/HURT.png",
-    win: "/assets/characters/knight/IDLE.png", 
-    lose: "/assets/characters/knight/DEATH.png",
+    size: 32, // source sprite size: 32x32 px
+    flip: false, // facing right
+    name: "Hero",
+    maxHp: 100,
+    animations: {
+      idle:   { src: "/assets/characters/knight/IDLE.png", frames: 7, fps: 8, loop: true },
+      attack: { src: "/assets/characters/knight/ATTACK_1.png", frames: 6, fps: 12, loop: false },
+      hurt:   { src: "/assets/characters/knight/HURT.png", frames: 4, fps: 8, loop: false },
+      win:    { src: "/assets/characters/knight/IDLE.png", frames: 7, fps: 8, loop: true },
+      lose:   { src: "/assets/characters/knight/DEATH.png", frames: 12, fps: 8, loop: false },
+    }
   },
   demon: {
-    idle: "https://placehold.co/256x256/ef4444/ffffff?text=Demon+Idle",
-    attack: "https://placehold.co/256x256/dc2626/ffffff?text=Demon+Attack\n(Slash!)",
-    hurt: "https://placehold.co/256x256/b91c1c/ffffff?text=Demon+Hurt\n(Ouch!)",
-    win: "https://placehold.co/256x256/991b1b/ffffff?text=Demon+Victory\n(Haha!)",
+    size: 32, // source sprite size: 64x64 px
+    flip: false, // facing left towards hero
+    name: "Flying Demon",
+    maxHp: 100,
+    animations: {
+      idle:   { src: "/assets/characters/flying_demon/IDLE.png", frames: 4, fps: 8, loop: true },
+      flying: { src: "/assets/characters/flying_demon/IDLE.png", frames: 4, fps: 8, loop: true },
+      attack: { src: "/assets/characters/flying_demon/ATTACK.png", frames: 8, fps: 12, loop: false },
+      hurt:   { src: "/assets/characters/flying_demon/HURT.png", frames: 4, fps: 8, loop: false },
+      win:    { src: "/assets/characters/flying_demon/IDLE.png", frames: 4, fps: 8, loop: true }, // Using idle as win state for now
+      lose:   { src: "/assets/characters/flying_demon/DEATH.png", frames: 7, fps: 8, loop: false },
+    }
   },
-  background: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=1965&auto=format&fit=crop", // Fantasy-like forest background
+  background: "/assets/backgrounds/forest.jpg", // Fantasy-like forest background
 }
 
 type Vocabulary = {
@@ -40,20 +68,27 @@ const SpriteSheet = ({
   fps = 10, 
   loop = true,
   delay = 0,
-  className = "" 
+  className = "",
+  scale = 1,
+  flip = false
 }: { 
   src: string, 
   frames: number, 
   fps?: number, 
   loop?: boolean,
   delay?: number,
-  className?: string 
+  className?: string,
+  scale?: number,
+  flip?: boolean
 }) => {
   const duration = loop ? frames / fps : (frames - 1) / fps;
-  const animationName = `slide-sprite-${frames}`;
+  const animationName = `slide-sprite-${frames}-${src.replace(/[^a-zA-Z0-9]/g, '')}`;
   
   return (
-    <div className={`overflow-hidden relative ${className}`}>
+    <div 
+      className={`overflow-hidden absolute bottom-0 left-[50%] -translate-x-[50%] pointer-events-none ${className}`}
+      style={{ width: `${scale * 100}%`, height: `${scale * 100}%` }}
+    >
       <style>{`
         @keyframes ${animationName} {
           to { transform: translateX(-${((frames - 1) / frames) * 100}%); }
@@ -63,7 +98,7 @@ const SpriteSheet = ({
         key={src}
         src={src} 
         alt="sprite" 
-        className="max-w-none h-full absolute top-0 left-0 [image-rendering:pixelated]"
+        className={`max-w-none h-full absolute top-0 left-0 [image-rendering:pixelated] ${flip ? '-scale-x-100' : ''}`}
         style={{
           width: `${frames * 100}%`,
           animation: `${animationName} ${duration}s steps(${frames - 1}, end) ${delay}s ${loop ? 'infinite' : '1 forwards'}`
@@ -78,12 +113,12 @@ export default function MiniGame() {
   const [currentWord, setCurrentWord] = useState<Vocabulary | null>(null)
   const [options, setOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [playerHp, setPlayerHp] = useState(100)
-  const [beastHp, setBeastHp] = useState(100)
+  const [playerHp, setPlayerHp] = useState(ASSETS.hero.maxHp)
+  const [beastHp, setBeastHp] = useState(ASSETS.demon.maxHp)
   const [gameState, setGameState] = useState<"playing" | "won" | "lost">("playing")
   const [feedback, setFeedback] = useState<{ type: "success" | "error", message: string } | null>(null)
   const [heroState, setHeroState] = useState<"idle" | "attack" | "hurt" | "win" | "lose">("idle")
-  const [demonState, setDemonState] = useState<"idle" | "attack" | "hurt" | "win">("idle")
+  const [demonState, setDemonState] = useState<"idle" | "attack" | "hurt" | "win" | "lose">("idle")
 
   const supabase = createClient()
   const router = useRouter()
@@ -146,19 +181,22 @@ export default function MiniGame() {
       // Attack animation is 6 frames at 12fps = 0.5s duration. 
       // Waiting exactly 0.5s for the attack animation to finish, then hurt the demon.
       setTimeout(() => {
-        setDemonState("hurt")
         setHeroState("idle") // Return to idle right after striking
-        setBeastHp(prev => {
+        setBeastHp((prev: number) => {
           const newHp = Math.max(0, prev - 25)
           if (newHp === 0) {
             setGameState("won")
             setHeroState("win")
+            setDemonState("lose")
+          } else {
+            setDemonState("hurt")
           }
           return newHp
         })
         setTimeout(() => {
           if (beastHp - 25 <= 0) {
              setHeroState("win") // Persist win state
+             setDemonState("lose")
           } else {
              setDemonState("idle")
              setupTurn(vocabularies)
@@ -170,13 +208,14 @@ export default function MiniGame() {
       
       setDemonState("attack")
       setTimeout(() => {
-        setHeroState("hurt")
-        setPlayerHp(prev => {
+        setPlayerHp((prev: number) => {
           const newHp = Math.max(0, prev - 20)
           if (newHp === 0) {
             setGameState("lost")
             setHeroState("lose")
             setDemonState("win")
+          } else {
+            setHeroState("hurt")
           }
           return newHp
         })
@@ -195,8 +234,8 @@ export default function MiniGame() {
   }
 
   const resetGame = () => {
-    setPlayerHp(100)
-    setBeastHp(100)
+    setPlayerHp(ASSETS.hero.maxHp)
+    setBeastHp(ASSETS.demon.maxHp)
     setGameState("playing")
     setHeroState("idle")
     setDemonState("idle")
@@ -216,16 +255,6 @@ export default function MiniGame() {
           </Button>
         </Link>
         <div className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-red-500 fill-red-500" />
-            <div className="w-32 h-3 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
-              <div 
-                className="h-full bg-red-500 transition-all duration-500" 
-                style={{ width: `${playerHp}%` }} 
-              />
-            </div>
-            <span className="text-sm font-bold">{playerHp}</span>
-          </div>
         </div>
       </div>
 
@@ -235,70 +264,48 @@ export default function MiniGame() {
           {/* Player Side */}
           <div className={`flex flex-col items-center transition-all duration-300 ${heroState === 'attack' ? 'translate-x-[40%] md:translate-x-[80%] scale-110 z-20' : ''} ${heroState === 'win' ? '-translate-y-10 animate-bounce' : ''} ${heroState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale translate-x-2 -rotate-6' : ''}`}>
             <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-end justify-center drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]`}>
-              {heroState === 'idle' ? (
+              {ASSETS.hero.animations[heroState] && (
                 <SpriteSheet 
-                  src={ASSETS.hero.idle} 
-                  frames={7} 
-                  fps={8} 
-                  className="w-full aspect-[96/84]" 
-                />
-              ) : heroState === 'attack' ? (
-                <SpriteSheet 
-                  src={ASSETS.hero.attack} 
-                  frames={6} 
-                  fps={12} 
-                  loop={false} // เล่นรอบเดียวจบ
-                  // delay={0.1} // ถ้าต้องการเว้นระยะสักนิดก่อนฟัน (เช่น 0.1 วินาที)
-                  className="w-full aspect-[96/84]" 
-                />
-              ) : heroState === 'win' ? (
-                <SpriteSheet 
-                  src={ASSETS.hero.win} 
-                  frames={7} 
-                  fps={8} 
-                  className="w-full aspect-[96/84]" 
-                />
-              ) : heroState === 'hurt' ? (
-                <SpriteSheet 
-                  src={ASSETS.hero.hurt} 
-                  frames={4} 
-                  fps={8} 
-                  loop={false}
-                  className="w-full aspect-[96/84]" 
-                />
-              ) : heroState === 'lose' ? (
-                <SpriteSheet 
-                  src={ASSETS.hero.lose} 
-                  frames={12} 
-                  fps={8} 
-                  loop={false}
-                  className="w-full aspect-[96/84]" 
-                />
-              ) : (
-                <img 
-                  src={ASSETS.hero[heroState]} 
-                  alt="Hero" 
-                  className={`w-full aspect-[96/84] object-contain [image-rendering:pixelated]`}
+                  src={ASSETS.hero.animations[heroState].src} 
+                  frames={ASSETS.hero.animations[heroState].frames} 
+                  fps={ASSETS.hero.animations[heroState].fps} 
+                  loop={ASSETS.hero.animations[heroState].loop}
+                  scale={ASSETS.hero.size / 32}
+                  flip={ASSETS.hero.flip}
                 />
               )}
+              <div className="absolute -top-5 left-0 right-0 flex flex-col items-center">
+                <span className="text-[10px] md:text-xs text-white bg-black/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">{ASSETS.hero.name}</span>
+                <div className="w-[80%] md:w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                  <div 
+                    className="h-full bg-green-500 transition-all duration-300" 
+                    style={{ width: `${(playerHp / ASSETS.hero.maxHp) * 100}%` }} 
+                  />
+                </div>
+              </div>
             </div>
-            <p className="mt-2 md:mt-4 font-bold text-sm md:text-lg bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Hero</p>
           </div>
 
           {/* Beast Side */}
           <div className={`flex flex-col items-center transition-all duration-300 ${demonState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale -translate-x-2 rotate-6' : ''} ${demonState === 'attack' ? '-translate-x-[40%] md:-translate-x-[80%] scale-110 z-20' : ''} ${demonState === 'win' ? '-translate-y-10 animate-bounce scale-110 drop-shadow-[0_0_50px_rgba(220,38,38,0.8)]' : ''}`}>
             <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-end justify-center drop-shadow-[0_0_25px_rgba(220,38,38,0.3)]`}>
-              <img 
-                src={ASSETS.demon[demonState]} 
-                alt="Demon" 
-                className={`w-full h-full object-contain [image-rendering:pixelated] -scale-x-100 ${demonState === 'hurt' ? 'animate-pulse' : ''}`}
-              />
+              {ASSETS.demon.animations[demonState] && (
+                <SpriteSheet 
+                  src={ASSETS.demon.animations[demonState].src} 
+                  frames={ASSETS.demon.animations[demonState].frames} 
+                  fps={ASSETS.demon.animations[demonState].fps} 
+                  loop={ASSETS.demon.animations[demonState].loop}
+                  scale={ASSETS.demon.size / 32}
+                  flip={ASSETS.demon.flip}
+                  className={demonState === 'hurt' ? 'animate-pulse' : ''}
+                />
+              )}
               <div className="absolute -top-5 left-0 right-0 flex flex-col items-center">
-                <span className="text-[10px] md:text-xs text-white bg-black/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">Demon Lord</span>
+                <span className="text-[10px] md:text-xs text-white bg-black/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">{ASSETS.demon.name}</span>
                 <div className="w-[80%] md:w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                   <div 
                     className="h-full bg-orange-600 transition-all duration-300" 
-                    style={{ width: `${beastHp}%` }} 
+                    style={{ width: `${(beastHp / ASSETS.demon.maxHp) * 100}%` }} 
                   />
                 </div>
               </div>
