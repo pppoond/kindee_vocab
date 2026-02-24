@@ -14,9 +14,9 @@ const ASSETS = {
   hero: {
     idle: "/assets/characters/knight/IDLE.png", // Local sprite sheet
     attack: "/assets/characters/knight/ATTACK_1.png", // Local sprite sheet
-    hurt: "https://placehold.co/256x256/93c5fd/ffffff?text=Hero+Hurt",
-    win: "https://placehold.co/256x256/22c55e/ffffff?text=Hero+Win!\n(Yay!)", 
-    lose: "https://placehold.co/256x256/94a3b8/ffffff?text=Hero+Defeated\n(RIP)",
+    hurt: "/assets/characters/knight/HURT.png",
+    win: "/assets/characters/knight/IDLE.png", 
+    lose: "/assets/characters/knight/DEATH.png",
   },
   demon: {
     idle: "https://placehold.co/256x256/ef4444/ffffff?text=Demon+Idle",
@@ -34,7 +34,6 @@ type Vocabulary = {
   type: string
 }
 
-// Reusable Sprite Sheet Component using transform for responsive scaling
 const SpriteSheet = ({ 
   src, 
   frames, 
@@ -50,17 +49,24 @@ const SpriteSheet = ({
   delay?: number,
   className?: string 
 }) => {
-  const duration = frames / fps;
+  const duration = loop ? frames / fps : (frames - 1) / fps;
+  const animationName = `slide-sprite-${frames}`;
+  
   return (
     <div className={`overflow-hidden relative ${className}`}>
+      <style>{`
+        @keyframes ${animationName} {
+          to { transform: translateX(-${((frames - 1) / frames) * 100}%); }
+        }
+      `}</style>
       <img 
+        key={src}
         src={src} 
         alt="sprite" 
         className="max-w-none h-full absolute top-0 left-0 [image-rendering:pixelated]"
         style={{
           width: `${frames * 100}%`,
-          // Use 'end' for steps to ensure it doesn't jump out of bounds on 'forwards'
-          animation: `slide-sprite ${duration}s steps(${frames}, end) ${delay}s ${loop ? 'infinite' : '1 forwards'}`
+          animation: `${animationName} ${duration}s steps(${frames - 1}, end) ${delay}s ${loop ? 'infinite' : '1 forwards'}`
         }} 
       />
     </div>
@@ -227,7 +233,7 @@ export default function MiniGame() {
         {/* Battle Arena */}
         <div className="w-full max-w-4xl grid grid-cols-2 gap-2 md:gap-8 items-center mb-6 md:mb-12 px-2 sm:px-0">
           {/* Player Side */}
-          <div className={`flex flex-col items-center transition-all duration-300 ${heroState === 'attack' ? 'translate-x-6 md:translate-x-20 scale-110' : ''} ${heroState === 'win' ? '-translate-y-10 animate-bounce' : ''} ${heroState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale translate-x-2 -rotate-6' : ''} ${heroState === 'lose' ? 'opacity-50 grayscale rotate-90 scale-75 blur-sm' : ''}`}>
+          <div className={`flex flex-col items-center transition-all duration-300 ${heroState === 'attack' ? 'translate-x-[40%] md:translate-x-[80%] scale-110 z-20' : ''} ${heroState === 'win' ? '-translate-y-10 animate-bounce' : ''} ${heroState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale translate-x-2 -rotate-6' : ''}`}>
             <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-end justify-center drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]`}>
               {heroState === 'idle' ? (
                 <SpriteSheet 
@@ -245,11 +251,34 @@ export default function MiniGame() {
                   // delay={0.1} // ถ้าต้องการเว้นระยะสักนิดก่อนฟัน (เช่น 0.1 วินาที)
                   className="w-full aspect-[96/84]" 
                 />
+              ) : heroState === 'win' ? (
+                <SpriteSheet 
+                  src={ASSETS.hero.win} 
+                  frames={7} 
+                  fps={8} 
+                  className="w-full aspect-[96/84]" 
+                />
+              ) : heroState === 'hurt' ? (
+                <SpriteSheet 
+                  src={ASSETS.hero.hurt} 
+                  frames={4} 
+                  fps={8} 
+                  loop={false}
+                  className="w-full aspect-[96/84]" 
+                />
+              ) : heroState === 'lose' ? (
+                <SpriteSheet 
+                  src={ASSETS.hero.lose} 
+                  frames={12} 
+                  fps={8} 
+                  loop={false}
+                  className="w-full aspect-[96/84]" 
+                />
               ) : (
                 <img 
-                  src={ASSETS.hero[heroState === 'hurt' ? 'idle' : heroState]} 
+                  src={ASSETS.hero[heroState]} 
                   alt="Hero" 
-                  className={`w-full aspect-[96/84] object-contain [image-rendering:pixelated] ${heroState === 'hurt' ? 'animate-pulse' : ''}`}
+                  className={`w-full aspect-[96/84] object-contain [image-rendering:pixelated]`}
                 />
               )}
             </div>
@@ -257,7 +286,7 @@ export default function MiniGame() {
           </div>
 
           {/* Beast Side */}
-          <div className={`flex flex-col items-center transition-all duration-300 ${demonState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale -translate-x-2 rotate-6' : ''} ${demonState === 'attack' ? '-translate-x-6 md:-translate-x-20 scale-110' : ''} ${demonState === 'win' ? '-translate-y-10 animate-bounce scale-110 drop-shadow-[0_0_50px_rgba(220,38,38,0.8)]' : ''}`}>
+          <div className={`flex flex-col items-center transition-all duration-300 ${demonState === 'hurt' ? 'scale-90 opacity-80 brightness-200 contrast-200 grayscale -translate-x-2 rotate-6' : ''} ${demonState === 'attack' ? '-translate-x-[40%] md:-translate-x-[80%] scale-110 z-20' : ''} ${demonState === 'win' ? '-translate-y-10 animate-bounce scale-110 drop-shadow-[0_0_50px_rgba(220,38,38,0.8)]' : ''}`}>
             <div className={`relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-end justify-center drop-shadow-[0_0_25px_rgba(220,38,38,0.3)]`}>
               <img 
                 src={ASSETS.demon[demonState]} 
