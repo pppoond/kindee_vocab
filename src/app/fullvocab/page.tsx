@@ -4,13 +4,13 @@ import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, ShieldAlert, Trophy, Star } from "lucide-react"
+import { ArrowLeft, ShieldAlert, Trophy, Star, BookOpen } from "lucide-react"
 import Link from "next/link"
 import { SpriteSheet } from "@/components/sprite-sheet"
 import { ASSETS, getEnemyStats } from "@/lib/game-assets"
 import { useGameEngine } from "@/hooks/useGameEngine"
 
-export default function MiniGame() {
+export default function FullVocabGame() {
   const {
     currentWord,
     options,
@@ -28,7 +28,7 @@ export default function MiniGame() {
     loadGame,
     handleAnswer,
     resetGame,
-  } = useGameEngine("normal")
+  } = useGameEngine("fullvocab")
 
   useEffect(() => {
     loadGame()
@@ -48,6 +48,10 @@ export default function MiniGame() {
           </Button>
         </Link>
         <div className="flex items-center gap-3">
+          <Badge variant="outline" className="border-purple-500/50 text-purple-400 gap-1.5 px-3 py-1 text-sm">
+            <BookOpen className="h-3.5 w-3.5" />
+            Full Vocab
+          </Badge>
           <Badge variant="outline" className="border-amber-500/50 text-amber-400 gap-1.5 px-3 py-1 text-sm">
             <Star className="h-3.5 w-3.5 fill-amber-400" />
             Level {level}
@@ -117,8 +121,8 @@ export default function MiniGame() {
         <div className="w-full max-w-2xl w-[95%] z-10 px-2 sm:px-0">
           {gameState === "playing" ? (
             <Card className="bg-zinc-900 border-zinc-800 shadow-2xl overflow-hidden">
-              <div className="bg-primary/10 p-2 text-center border-b border-zinc-800">
-                <Badge variant="outline" className="text-zinc-400 border-zinc-700 text-[10px] md:text-xs">Choose the correct meaning</Badge>
+              <div className="bg-purple-500/10 p-2 text-center border-b border-zinc-800">
+                <Badge variant="outline" className="text-purple-400 border-purple-700/50 text-[10px] md:text-xs">Full Vocab Mode — Choose the correct meaning</Badge>
               </div>
               <CardHeader className="text-center pt-4 md:pt-8 pb-2 md:pb-4 px-2 md:px-6">
                 <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 break-words">{currentWord?.word}</CardTitle>
@@ -155,7 +159,7 @@ export default function MiniGame() {
                 <>
                   <Trophy className="h-16 w-16 md:h-24 md:w-24 text-yellow-500 mx-auto mb-4 md:mb-6" />
                   <h2 className="text-4xl md:text-6xl font-black mb-4">VICTORY!</h2>
-                  <p className="text-lg md:text-xl text-zinc-400 mb-6 md:mb-8">The Princess is safe, and your vocabulary is stronger!</p>
+                  <p className="text-lg md:text-xl text-zinc-400 mb-6 md:mb-8">You've mastered all your vocabulary!</p>
                 </>
               ) : (
                 <>
