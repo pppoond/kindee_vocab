@@ -42,7 +42,7 @@ const WORD_TYPES = [
   "Interjection"
 ]
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 25
 
 type DailyStats = {
   gamesPlayed: number

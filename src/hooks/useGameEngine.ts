@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { ASSETS, getEnemyStats, HERO_DAMAGE, getAllAssetUrls, preloadImages } from "@/lib/game-assets"
 import { useRouter } from "next/navigation"
@@ -31,6 +31,12 @@ export function useGameEngine(mode: GameMode) {
   const [demonState, setDemonState] = useState<CharacterState>("idle")
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
+
+  // Refs to track actual HP values for side-effect logic (avoids React Strict Mode double-call issues)
+  const beastHpRef = useRef(getEnemyStats(1).maxHp)
+  const playerHpRef = useRef(ASSETS.hero.maxHp)
+  const correctCountRef = useRef(0)
+  const wrongCountRef = useRef(0)
 
   const supabase = createClient()
   const router = useRouter()
@@ -105,10 +111,12 @@ export function useGameEngine(mode: GameMode) {
     setLevel(prev => {
       const newLevel = prev + 1
       const stats = getEnemyStats(newLevel)
+      beastHpRef.current = stats.maxHp
       setBeastHp(stats.maxHp)
       setBeastMaxHp(stats.maxHp)
       return newLevel
     })
+    playerHpRef.current = ASSETS.hero.maxHp
     setPlayerHp(ASSETS.hero.maxHp)
     setGameState("playing")
     setHeroState("idle")
@@ -123,80 +131,62 @@ export function useGameEngine(mode: GameMode) {
     const currentEnemyStats = getEnemyStats(level)
 
     if (answer === currentWord?.meaning) {
-      setCorrectCount(prev => prev + 1)
+      correctCountRef.current += 1
+      setCorrectCount(correctCountRef.current)
       setFeedback({ type: "success", message: "Correct! You strike the beast!" })
       setHeroState("attack")
 
       setTimeout(() => {
         setHeroState("idle")
-        setBeastHp((prev: number) => {
-          const newHp = Math.max(0, prev - HERO_DAMAGE)
-          if (newHp === 0) {
-            // Level cleared!
-            setGameState("leveling")
-            setHeroState("win")
-            setDemonState("lose")
+        const newBeastHp = Math.max(0, beastHpRef.current - HERO_DAMAGE)
+        beastHpRef.current = newBeastHp
+        setBeastHp(newBeastHp)
 
-            // Auto-advance after a short delay
-            setTimeout(() => {
-              startNextLevel(vocabularies)
-            }, 2500)
-          } else {
-            setDemonState("hurt")
-          }
-          return newHp
-        })
-        setTimeout(() => {
-          setBeastHp((currentHp: number) => {
-            if (currentHp <= 0) {
-              setHeroState("win")
-              setDemonState("lose")
-            } else {
-              setDemonState("idle")
-              setupTurn(vocabularies)
-            }
-            return currentHp
-          })
-        }, 1000)
+        if (newBeastHp === 0) {
+          // Level cleared!
+          setGameState("leveling")
+          setHeroState("win")
+          setDemonState("lose")
+
+          // Save session for this cleared level
+          saveSession("won", level, correctCountRef.current, wrongCountRef.current)
+
+          // Auto-advance after a short delay
+          setTimeout(() => {
+            startNextLevel(vocabularies)
+          }, 2500)
+        } else {
+          setDemonState("hurt")
+          setTimeout(() => {
+            setDemonState("idle")
+            setupTurn(vocabularies)
+          }, 1000)
+        }
       }, 500)
     } else {
-      setWrongCount(prev => prev + 1)
+      wrongCountRef.current += 1
+      setWrongCount(wrongCountRef.current)
       setFeedback({ type: "error", message: `Wrong! The correct meaning was: ${currentWord?.meaning}` })
       
       setDemonState("attack")
       setTimeout(() => {
-        setPlayerHp((prev: number) => {
-          const newHp = Math.max(0, prev - currentEnemyStats.damage)
-          if (newHp === 0) {
-            setGameState("lost")
-            setHeroState("lose")
-            setDemonState("win")
-            // Save session on loss
-            setCorrectCount(cc => {
-              setWrongCount(wc => {
-                saveSession("lost", level, cc, wc)
-                return wc
-              })
-              return cc
-            })
-          } else {
-            setHeroState("hurt")
-          }
-          return newHp
-        })
-        setTimeout(() => {
-          setPlayerHp((currentHp: number) => {
-            if (currentHp <= 0) {
-              setHeroState("lose")
-              setDemonState("win")
-            } else {
-              setHeroState("idle")
-              setDemonState("idle")
-              setupTurn(vocabularies)
-            }
-            return currentHp
-          })
-        }, 1000)
+        const newPlayerHp = Math.max(0, playerHpRef.current - currentEnemyStats.damage)
+        playerHpRef.current = newPlayerHp
+        setPlayerHp(newPlayerHp)
+
+        if (newPlayerHp === 0) {
+          setGameState("lost")
+          setHeroState("lose")
+          setDemonState("win")
+          saveSession("lost", level, correctCountRef.current, wrongCountRef.current)
+        } else {
+          setHeroState("hurt")
+          setTimeout(() => {
+            setHeroState("idle")
+            setDemonState("idle")
+            setupTurn(vocabularies)
+          }, 1000)
+        }
       }, 500)
     }
   }, [gameState, feedback, currentWord, vocabularies, level, setupTurn, startNextLevel, saveSession])
@@ -204,6 +194,10 @@ export function useGameEngine(mode: GameMode) {
   const resetGame = useCallback(() => {
     setLevel(1)
     const stats = getEnemyStats(1)
+    beastHpRef.current = stats.maxHp
+    playerHpRef.current = ASSETS.hero.maxHp
+    correctCountRef.current = 0
+    wrongCountRef.current = 0
     setPlayerHp(ASSETS.hero.maxHp)
     setBeastHp(stats.maxHp)
     setBeastMaxHp(stats.maxHp)
