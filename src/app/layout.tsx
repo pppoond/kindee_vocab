@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AlertProvider } from "@/components/alert-provider";
 import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
@@ -36,7 +37,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NextTopLoader color="#f59e0b" height={3} showSpinner={false} />
-          {children}
+          <AlertProvider>
+            {children}
+          </AlertProvider>
         </ThemeProvider>
       </body>
     </html>

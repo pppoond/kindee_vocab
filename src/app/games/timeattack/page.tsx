@@ -8,8 +8,10 @@ import { ArrowLeft, Timer, Trophy, RotateCcw, Clock } from "lucide-react"
 import Link from "next/link"
 import { useTimeAttackEngine, TIME_OPTIONS } from "@/hooks/useTimeAttackEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
+import { useAlert } from "@/components/alert-provider"
 
 export default function TimeAttackGame() {
+  const { showAlert } = useAlert()
   const {
     currentWord,
     options,
@@ -25,7 +27,7 @@ export default function TimeAttackGame() {
     startGame,
     handleAnswer,
     resetGame,
-  } = useTimeAttackEngine()
+  } = useTimeAttackEngine((msg) => showAlert(msg, { type: "error" }))
 
   useEffect(() => {
     loadGame()

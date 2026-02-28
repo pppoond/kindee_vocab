@@ -20,6 +20,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAlert } from "@/components/alert-provider"
 
 type Vocabulary = {
   id: string
@@ -68,6 +69,7 @@ export default function Dashboard() {
   
   const supabase = createClient()
   const router = useRouter()
+  const { showAlert, showConfirm } = useAlert()
 
   const fetchVocabularies = useCallback(async (page: number, search = searchQuery, type = filterType, memorized = filterMemorized) => {
     setLoading(true)
@@ -214,7 +216,7 @@ export default function Dashboard() {
       setOpen(false)
       fetchVocabularies(currentPage)
     } catch (err: any) {
-      alert(err.message)
+      showAlert(err.message, { type: "error" })
     } finally {
       setSaving(false)
     }
@@ -232,7 +234,8 @@ export default function Dashboard() {
   }
 
   const deleteWord = async (id: string) => {
-    if (!confirm("Are you sure?")) return
+    const confirmed = await showConfirm("Are you sure you want to delete this word?")
+    if (!confirmed) return
     const { error } = await supabase
       .from("vocabularies")
       .delete()
