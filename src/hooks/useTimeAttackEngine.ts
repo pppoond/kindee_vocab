@@ -120,7 +120,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
   }, [vocabularies, setupTurn, saveSession])
 
   const handleAnswer = useCallback((answer: string) => {
-    if (gameStateRef.current !== "playing" || feedback) return
+    if (gameStateRef.current !== "playing" || feedback || !currentWord) return
 
     if (answer === currentWord?.meaning) {
       correctCountRef.current += 1

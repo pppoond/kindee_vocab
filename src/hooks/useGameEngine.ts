@@ -127,7 +127,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   }, [setupTurn])
 
   const handleAnswer = useCallback((answer: string) => {
-    if (gameState !== "playing" || feedback) return
+    if (gameState !== "playing" || feedback || !currentWord) return
 
     const currentEnemyStats = getEnemyStats(level)
 
