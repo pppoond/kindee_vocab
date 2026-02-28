@@ -218,16 +218,10 @@ export default function Dashboard() {
             <h1 className="text-xl font-bold tracking-tight">Kindee Vocab</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/minigame">
+            <Link href="/games">
               <Button variant="outline" className="gap-2">
                 <Gamepad2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Play Game</span>
-              </Button>
-            </Link>
-            <Link href="/fullvocab">
-              <Button variant="outline" className="gap-2 border-purple-500/30 text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950/30">
-                <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline">Full Vocab</span>
               </Button>
             </Link>
             <ThemeToggle />
