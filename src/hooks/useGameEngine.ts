@@ -31,6 +31,7 @@ export function useGameEngine(mode: GameMode) {
   const [demonState, setDemonState] = useState<CharacterState>("idle")
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
+  const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string }[]>([])
 
   // Refs to track actual HP values for side-effect logic (avoids React Strict Mode double-call issues)
   const beastHpRef = useRef(getEnemyStats(1).maxHp)
@@ -166,6 +167,7 @@ export function useGameEngine(mode: GameMode) {
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
+      setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
       setFeedback({ type: "error", message: `Wrong! The correct meaning was: ${currentWord?.meaning}` })
       
       setDemonState("attack")
@@ -207,6 +209,7 @@ export function useGameEngine(mode: GameMode) {
     setFeedback(null)
     setCorrectCount(0)
     setWrongCount(0)
+    setWrongAnswers([])
     loadGame()
   }, [loadGame])
 
@@ -226,6 +229,7 @@ export function useGameEngine(mode: GameMode) {
     demonState,
     correctCount,
     wrongCount,
+    wrongAnswers,
     // Actions
     loadGame,
     handleAnswer,

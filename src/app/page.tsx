@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,20 +62,36 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [dailyStats, setDailyStats] = useState<DailyStats>({ gamesPlayed: 0, bestLevel: 0, correctCount: 0, wrongCount: 0 })
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterType, setFilterType] = useState("all")
+  const [filterMemorized, setFilterMemorized] = useState("all")
   
   const supabase = createClient()
   const router = useRouter()
 
-  const fetchVocabularies = useCallback(async (page: number) => {
+  const fetchVocabularies = useCallback(async (page: number, search = searchQuery, type = filterType, memorized = filterMemorized) => {
     setLoading(true)
     const from = (page - 1) * PAGE_SIZE
     const to = from + PAGE_SIZE - 1
 
-    const { data, error, count } = await supabase
+    let query = supabase
       .from("vocabularies")
       .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
-      .range(from, to)
+
+    if (search.trim()) {
+      query = query.or(`word.ilike.%${search.trim()}%,meaning.ilike.%${search.trim()}%`)
+    }
+    if (type !== "all") {
+      query = query.eq("type", type)
+    }
+    if (memorized === "yes") {
+      query = query.eq("memorized", true)
+    } else if (memorized === "no") {
+      query = query.eq("memorized", false)
+    }
+
+    const { data, error, count } = await query.range(from, to)
     
     if (error) {
       console.error(error)
@@ -84,7 +100,35 @@ export default function Dashboard() {
       if (count !== null) setTotalCount(count)
     }
     setLoading(false)
-  }, [supabase])
+  }, [supabase, searchQuery, filterType, filterMemorized])
+
+  const speakWord = (word: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance(word)
+      utterance.lang = 'en-US'
+      utterance.rate = 0.9
+      window.speechSynthesis.speak(utterance)
+    }
+  }
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value)
+    setCurrentPage(1)
+    fetchVocabularies(1, value, filterType, filterMemorized)
+  }
+
+  const handleFilterType = (value: string) => {
+    setFilterType(value)
+    setCurrentPage(1)
+    fetchVocabularies(1, searchQuery, value, filterMemorized)
+  }
+
+  const handleFilterMemorized = (value: string) => {
+    setFilterMemorized(value)
+    setCurrentPage(1)
+    fetchVocabularies(1, searchQuery, filterType, value)
+  }
 
   const fetchDailyStats = useCallback(async () => {
     const today = new Date()
@@ -351,6 +395,40 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Your Word List</h2>
           </div>
+
+          {/* Search & Filter */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search words or meanings..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={filterType} onValueChange={handleFilterType}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {WORD_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterMemorized} onValueChange={handleFilterMemorized}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="no">Not Memorized</SelectItem>
+                <SelectItem value="yes">Memorized</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {loading ? (
             <p className="text-muted-foreground">Loading words...</p>
           ) : vocabularies.length === 0 ? (
@@ -366,6 +444,9 @@ export default function Dashboard() {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
                           <CardTitle className="text-xl break-all">{v.word}</CardTitle>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-primary shrink-0" onClick={() => speakWord(v.word)}>
+                            <Volume2 className="h-4 w-4" />
+                          </Button>
                           {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
                         </div>
                         {v.type && (

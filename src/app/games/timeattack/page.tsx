@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Timer, Trophy, RotateCcw, Clock } from "lucide-react"
 import Link from "next/link"
 import { useTimeAttackEngine, TIME_OPTIONS } from "@/hooks/useTimeAttackEngine"
+import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 
 export default function TimeAttackGame() {
   const {
@@ -17,6 +18,7 @@ export default function TimeAttackGame() {
     feedback,
     correctCount,
     wrongCount,
+    wrongAnswers,
     timeLeft,
     totalTime,
     loadGame,
@@ -166,6 +168,7 @@ export default function TimeAttackGame() {
                 <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
               </Link>
             </div>
+            <ReviewWrongAnswers wrongAnswers={wrongAnswers} />
           </div>
         )}
       </div>

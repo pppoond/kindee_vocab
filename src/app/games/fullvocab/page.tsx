@@ -9,6 +9,7 @@ import Link from "next/link"
 import { SpriteSheet } from "@/components/sprite-sheet"
 import { ASSETS, getEnemyStats } from "@/lib/game-assets"
 import { useGameEngine } from "@/hooks/useGameEngine"
+import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 
 export default function FullVocabGame() {
   const {
@@ -25,6 +26,7 @@ export default function FullVocabGame() {
     demonState,
     correctCount,
     wrongCount,
+    wrongAnswers,
     loadGame,
     handleAnswer,
     resetGame,
@@ -175,6 +177,7 @@ export default function FullVocabGame() {
                   <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
                 </Link>
               </div>
+              <ReviewWrongAnswers wrongAnswers={wrongAnswers} />
             </div>
           )}
         </div>

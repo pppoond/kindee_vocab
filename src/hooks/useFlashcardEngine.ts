@@ -26,6 +26,7 @@ export function useFlashcardEngine() {
   const [showMeaning, setShowMeaning] = useState(false)
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
+  const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string }[]>([])
   const [totalWords, setTotalWords] = useState(0)
   const [timeLeft, setTimeLeft] = useState(60)
   const [totalTime, setTotalTime] = useState(60)
@@ -142,6 +143,7 @@ export function useFlashcardEngine() {
       // Don't remember
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
+      setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
     }
 
     // Show meaning briefly, then advance
@@ -186,6 +188,7 @@ export function useFlashcardEngine() {
     setLastSwipe(null)
     setCurrentWord(null)
     setQueue([])
+    setWrongAnswers([])
   }, [])
 
   useEffect(() => {
@@ -202,6 +205,7 @@ export function useFlashcardEngine() {
     showMeaning,
     correctCount,
     wrongCount,
+    wrongAnswers,
     totalWords,
     timeLeft,
     totalTime,
