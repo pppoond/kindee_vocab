@@ -34,6 +34,11 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: "/assets/logos/logo.png",
+    shortcut: "/assets/logos/logo.png",
+    apple: "/assets/logos/logo.png",
+  },
 };
 
 export default function RootLayout({

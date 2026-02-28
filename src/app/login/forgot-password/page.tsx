@@ -39,10 +39,15 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-black">
       <Card className="w-full max-w-md border-zinc-200 shadow-lg dark:border-zinc-800">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">
+          <div className="flex justify-center mb-4">
+            <div className="bg-primary/10 p-2 rounded-2xl border border-primary/20">
+              <img src="/assets/logos/logo.png" alt="Kindee Vocab" className="h-10 w-10 object-contain" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold tracking-tight text-center">
             Reset your password
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-center">
             {sent
               ? "Check your email for the reset link"
               : "Enter your email and we'll send you a reset link"}
