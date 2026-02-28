@@ -11,6 +11,7 @@ import { ASSETS, getEnemyStats } from "@/lib/game-assets"
 import { useGameEngine } from "@/hooks/useGameEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
+import { Loading } from "@/components/ui/loading"
 
 export default function BattleGame() {
   const { showAlert } = useAlert()
@@ -40,7 +41,11 @@ export default function BattleGame() {
 
   const enemyStats = getEnemyStats(level)
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">Loading game...</div>
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+      <Loading text="Loading game..." className="text-white" />
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white overflow-y-auto flex flex-col">

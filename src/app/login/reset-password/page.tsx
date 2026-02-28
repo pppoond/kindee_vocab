@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import { Loader2 } from "lucide-react"
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("")
@@ -95,7 +96,12 @@ export default function ResetPasswordPage() {
             </CardContent>
             <CardFooter>
               <Button className="w-full" type="submit" disabled={loading}>
-                {loading ? "Updating..." : "Update Password"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : "Update Password"}
               </Button>
             </CardFooter>
           </form>

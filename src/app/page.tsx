@@ -21,6 +21,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAlert } from "@/components/alert-provider"
+import { Loading } from "@/components/ui/loading"
+import { Loader2 } from "lucide-react"
 
 type Vocabulary = {
   id: string
@@ -386,7 +388,12 @@ export default function Dashboard() {
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={saving}>
-                  {saving ? "Saving..." : editingWord ? "Update Word" : "Save Word"}
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : editingWord ? "Update Word" : "Save Word"}
                 </Button>
               </DialogFooter>
             </form>
@@ -433,7 +440,7 @@ export default function Dashboard() {
             </Select>
           </div>
           {loading ? (
-            <p className="text-muted-foreground">Loading words...</p>
+            <Loading text="Loading words..." className="py-12" />
           ) : vocabularies.length === 0 ? (
             <Card className="p-12 text-center border-dashed">
               <CardDescription>No words added yet. Start by adding your first word!</CardDescription>

@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useFlashcardEngine, TIME_OPTIONS } from "@/hooks/useFlashcardEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
+import { Loading } from "@/components/ui/loading"
 
 export default function FlashcardGame() {
   const { showAlert } = useAlert()
@@ -85,7 +86,11 @@ export default function FlashcardGame() {
   const onMouseUp = () => handleDragEnd()
   const onMouseLeave = () => { if (isDragging) handleDragEnd() }
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">Loading game...</div>
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+      <Loading text="Loading game..." className="text-white" />
+    </div>
+  )
 
   const timerPercent = subMode === "timed" ? (timeLeft / totalTime) * 100 : 100
   const timerColor = timeLeft <= 10 ? "text-red-400" : timeLeft <= 20 ? "text-amber-400" : "text-emerald-400"
