@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAlert } from "@/components/alert-provider"
+import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -97,7 +98,12 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Processing..." : isSignUp ? "Sign Up" : "Login"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : isSignUp ? "Sign Up" : "Login"}
             </Button>
             <Button 
               variant="ghost" 

@@ -9,6 +9,7 @@ import Link from "next/link"
 import { useTimeAttackEngine, TIME_OPTIONS } from "@/hooks/useTimeAttackEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
+import { Loading } from "@/components/ui/loading"
 
 export default function TimeAttackGame() {
   const { showAlert } = useAlert()
@@ -33,7 +34,11 @@ export default function TimeAttackGame() {
     loadGame()
   }, [loadGame])
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">Loading game...</div>
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+      <Loading text="Loading game..." className="text-white" />
+    </div>
+  )
 
   const timerPercent = (timeLeft / totalTime) * 100
   const timerColor = timeLeft <= 10 ? "text-red-400" : timeLeft <= 20 ? "text-amber-400" : "text-cyan-400"
