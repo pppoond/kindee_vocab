@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -81,6 +82,12 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required 
               />
+              <Link
+                href="/login/forgot-password"
+                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
             {error && (
               <p className="text-sm text-destructive">{error}</p>

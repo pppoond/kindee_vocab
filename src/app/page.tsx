@@ -4,12 +4,13 @@ import { useEffect, useState, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 type Vocabulary = {
   id: string
@@ -40,7 +42,14 @@ const WORD_TYPES = [
   "Interjection"
 ]
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 25
+
+type DailyStats = {
+  gamesPlayed: number
+  bestLevel: number
+  correctCount: number
+  wrongCount: number
+}
 
 export default function Dashboard() {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
@@ -52,6 +61,7 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [dailyStats, setDailyStats] = useState<DailyStats>({ gamesPlayed: 0, bestLevel: 0, correctCount: 0, wrongCount: 0 })
   
   const supabase = createClient()
   const router = useRouter()
@@ -76,6 +86,26 @@ export default function Dashboard() {
     setLoading(false)
   }, [supabase])
 
+  const fetchDailyStats = useCallback(async () => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const { data, error } = await supabase
+      .from("game_sessions")
+      .select("*")
+      .gte("played_at", today.toISOString())
+    
+    if (!error && data) {
+      const stats: DailyStats = {
+        gamesPlayed: data.length,
+        bestLevel: data.length > 0 ? Math.max(...data.map(s => s.level)) : 0,
+        correctCount: data.reduce((sum, s) => sum + s.correct_count, 0),
+        wrongCount: data.reduce((sum, s) => sum + s.wrong_count, 0),
+      }
+      setDailyStats(stats)
+    }
+  }, [supabase])
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -85,9 +115,10 @@ export default function Dashboard() {
       }
       setUser(user)
       fetchVocabularies(currentPage)
+      fetchDailyStats()
     }
     getUser()
-  }, [currentPage, fetchVocabularies, router, supabase.auth])
+  }, [currentPage, fetchVocabularies, fetchDailyStats, router, supabase.auth])
 
   const handleOpenAdd = () => {
     setEditingWord(null)
@@ -193,6 +224,13 @@ export default function Dashboard() {
                 <span className="hidden sm:inline">Play Game</span>
               </Button>
             </Link>
+            <Link href="/fullvocab">
+              <Button variant="outline" className="gap-2 border-purple-500/30 text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950/30">
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Full Vocab</span>
+              </Button>
+            </Link>
+            <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
             </Button>
@@ -202,7 +240,7 @@ export default function Dashboard() {
 
       <main className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
           <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
             <CardHeader className="pb-2">
               <CardDescription>Total Vocabulary</CardDescription>
@@ -210,10 +248,35 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
           
-          <div className="hidden sm:block" />
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Gamepad2 className="h-3.5 w-3.5" /> Today&apos;s Games</CardDescription>
+              <CardTitle className="text-4xl">{dailyStats.gamesPlayed}</CardTitle>
+            </CardHeader>
+          </Card>
 
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> Best Level Today</CardDescription>
+              <CardTitle className="text-4xl">{dailyStats.bestLevel || "—"}</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1.5"><Target className="h-3.5 w-3.5" /> Today&apos;s Accuracy</CardDescription>
+              <CardTitle className="text-4xl">
+                {dailyStats.correctCount + dailyStats.wrongCount > 0
+                  ? `${Math.round((dailyStats.correctCount / (dailyStats.correctCount + dailyStats.wrongCount)) * 100)}%`
+                  : "—"}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        <div className="mb-8">
           <Button 
-            className="h-auto flex-col items-center justify-center gap-2 py-6 text-lg sm:col-span-2 lg:col-span-1"
+            className="w-full h-auto flex-col items-center justify-center gap-2 py-6 text-lg"
             onClick={handleOpenAdd}
           >
             <Plus className="h-8 w-8" />
@@ -261,8 +324,9 @@ export default function Dashboard() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="meaning">Meaning</Label>
-                <Input 
+                <Textarea 
                   id="meaning" 
+                  rows={3}
                   value={formData.meaning} 
                   onChange={e => setFormData({ ...formData, meaning: e.target.value })}
                   placeholder="e.g. The quality that allows someone to continue doing something" 
@@ -271,8 +335,9 @@ export default function Dashboard() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="example">Example Sentence</Label>
-                <Input 
+                <Textarea 
                   id="example" 
+                  rows={3}
                   value={formData.example} 
                   onChange={e => setFormData({ ...formData, example: e.target.value })}
                   placeholder="e.g. Her persistence paid off when she finally won." 
@@ -306,7 +371,7 @@ export default function Dashboard() {
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                          <CardTitle className="text-xl">{v.word}</CardTitle>
+                          <CardTitle className="text-xl break-all">{v.word}</CardTitle>
                           {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
                         </div>
                         {v.type && (
