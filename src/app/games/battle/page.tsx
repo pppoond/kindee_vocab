@@ -10,7 +10,7 @@ import { SpriteSheet } from "@/components/sprite-sheet"
 import { ASSETS, getEnemyStats } from "@/lib/game-assets"
 import { useGameEngine } from "@/hooks/useGameEngine"
 
-export default function MiniGame() {
+export default function BattleGame() {
   const {
     currentWord,
     options,
@@ -42,9 +42,9 @@ export default function MiniGame() {
     <div className="min-h-screen bg-zinc-950 text-white overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-10">
-        <Link href="/">
+        <Link href="/games">
           <Button variant="ghost" className="text-zinc-400 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Dashboard</span>
+            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
           </Button>
         </Link>
         <div className="flex items-center gap-3">
@@ -167,8 +167,8 @@ export default function MiniGame() {
               )}
               <div className="flex gap-4 justify-center">
                 <Button size="lg" className="px-8 text-lg" onClick={resetGame}>Try Again</Button>
-                <Link href="/">
-                  <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back Home</Button>
+                <Link href="/games">
+                  <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
                 </Link>
               </div>
             </div>
