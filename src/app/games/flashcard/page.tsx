@@ -1,0 +1,313 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Trophy, RotateCcw, Clock, X, Check, Layers, Timer } from "lucide-react"
+import Link from "next/link"
+import { useFlashcardEngine, TIME_OPTIONS } from "@/hooks/useFlashcardEngine"
+
+export default function FlashcardGame() {
+  const {
+    currentWord,
+    loading,
+    gameState,
+    subMode,
+    showMeaning,
+    correctCount,
+    wrongCount,
+    totalWords,
+    timeLeft,
+    totalTime,
+    lastSwipe,
+    loadGame,
+    startGame,
+    handleSwipe,
+    resetGame,
+  } = useFlashcardEngine()
+
+  // Swipe gesture handling
+  const cardRef = useRef<HTMLDivElement>(null)
+  const startX = useRef(0)
+  const currentX = useRef(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
+  useEffect(() => {
+    loadGame()
+  }, [loadGame])
+
+  const handleDragStart = (clientX: number) => {
+    if (showMeaning) return
+    setIsDragging(true)
+    startX.current = clientX
+    currentX.current = clientX
+  }
+
+  const handleDragMove = (clientX: number) => {
+    if (!isDragging || showMeaning) return
+    currentX.current = clientX
+    const offset = clientX - startX.current
+    setDragOffset(offset)
+  }
+
+  const handleDragEnd = () => {
+    if (!isDragging || showMeaning) return
+    setIsDragging(false)
+    const offset = currentX.current - startX.current
+
+    if (Math.abs(offset) > 80) {
+      // Swipe threshold met
+      if (offset > 0) {
+        setDragOffset(400)
+        handleSwipe("right")
+      } else {
+        setDragOffset(-400)
+        handleSwipe("left")
+      }
+    }
+    // Reset after animation
+    setTimeout(() => setDragOffset(0), 300)
+  }
+
+  // Touch events
+  const onTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX)
+  const onTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX)
+  const onTouchEnd = () => handleDragEnd()
+
+  // Mouse events
+  const onMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX)
+  const onMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX)
+  const onMouseUp = () => handleDragEnd()
+  const onMouseLeave = () => { if (isDragging) handleDragEnd() }
+
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">Loading game...</div>
+
+  const timerPercent = subMode === "timed" ? (timeLeft / totalTime) * 100 : 100
+  const timerColor = timeLeft <= 10 ? "text-red-400" : timeLeft <= 20 ? "text-amber-400" : "text-emerald-400"
+  const barColor = timeLeft <= 10 ? "bg-red-500" : timeLeft <= 20 ? "bg-amber-500" : "bg-emerald-500"
+
+  // Card rotation based on drag
+  const rotation = isDragging ? dragOffset * 0.05 : lastSwipe === "right" ? 15 : lastSwipe === "left" ? -15 : 0
+  const opacity = showMeaning && !isDragging ? 0.6 : 1
+
+  // Swipe indicator colors
+  const swipeIndicator = dragOffset > 40 ? "border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+    : dragOffset < -40 ? "border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.3)]"
+    : "border-zinc-700"
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white overflow-hidden flex flex-col select-none">
+      {/* Header */}
+      <div className="p-4 flex items-center justify-between z-10">
+        <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
+          <Link href="/games">
+            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
+          </Link>
+        </Button>
+        {gameState === "playing" && (
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 gap-1.5 px-3 py-1 text-sm">
+              <Layers className="h-3.5 w-3.5" />
+              Flashcard
+            </Badge>
+            <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-xs">
+              ✅ {correctCount} / ❌ {wrongCount}
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center p-4 relative z-10">
+        {gameState === "selecting" ? (
+          /* Mode Selection */
+          <div className="text-center animate-in fade-in duration-500 w-full max-w-lg">
+            <div className="mx-auto mb-6 p-5 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 w-fit">
+              <Layers className="h-16 w-16 text-emerald-400" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
+              Flashcard Swipe
+            </h2>
+            <p className="text-zinc-400 mb-10 text-lg">เลือกโหมดที่ต้องการ</p>
+
+            <div className="grid gap-4 max-w-sm mx-auto">
+              {/* Normal Mode */}
+              <Button
+                variant="outline"
+                className="h-auto py-6 flex-col gap-2 border-zinc-700 bg-zinc-900 hover:bg-emerald-950/50 hover:border-emerald-500/50 text-white transition-all duration-200"
+                onClick={() => startGame("normal")}
+              >
+                <Layers className="h-6 w-6 text-emerald-400" />
+                <span className="text-xl font-black">Normal</span>
+                <span className="text-xs text-zinc-500">เล่นจนครบทุกคำ</span>
+              </Button>
+
+              {/* Timed Mode - Time Selection */}
+              <div className="text-zinc-500 text-sm font-medium mt-2 mb-1">— หรือ จับเวลา —</div>
+              <div className="grid grid-cols-4 gap-3">
+                {TIME_OPTIONS.map((seconds) => (
+                  <Button
+                    key={seconds}
+                    variant="outline"
+                    className="h-auto py-4 flex-col gap-1 border-zinc-700 bg-zinc-900 hover:bg-emerald-950/50 hover:border-emerald-500/50 text-white transition-all duration-200"
+                    onClick={() => startGame("timed", seconds)}
+                  >
+                    <Clock className="h-4 w-4 text-emerald-400" />
+                    <span className="text-lg font-black">{seconds}</span>
+                    <span className="text-[10px] text-zinc-500">วินาที</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : gameState === "playing" && currentWord ? (
+          /* Playing - Swipe Card */
+          <div className="w-full max-w-md flex flex-col items-center">
+            {/* Timer for timed mode */}
+            {subMode === "timed" && (
+              <div className="w-full mb-6">
+                <div className="flex items-center justify-center mb-2">
+                  <span className={`text-4xl md:text-5xl font-black tabular-nums ${timerColor} transition-colors ${timeLeft <= 10 ? 'animate-pulse' : ''}`}>
+                    {timeLeft}
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                  <div className={`h-full ${barColor} transition-all duration-1000 ease-linear`} style={{ width: `${timerPercent}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Progress for normal mode */}
+            {subMode === "normal" && (
+              <div className="mb-4 text-zinc-500 text-sm">
+                {correctCount + wrongCount} / {totalWords} คำ
+              </div>
+            )}
+
+            {/* Swipe indicators */}
+            <div className="relative w-full flex items-center justify-center mb-6">
+              {/* Left indicator */}
+              <div className={`absolute left-0 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${dragOffset < -40 ? 'opacity-100' : 'opacity-20'}`}>
+                <div className="p-3 rounded-full bg-red-500/20 border border-red-500/50">
+                  <X className="h-6 w-6 text-red-400" />
+                </div>
+              </div>
+
+              {/* The Card */}
+              <div
+                ref={cardRef}
+                className={`w-72 sm:w-80 min-h-[320px] sm:min-h-[380px] rounded-2xl border-2 ${swipeIndicator} bg-zinc-900 flex flex-col items-center justify-center p-8 cursor-grab active:cursor-grabbing transition-shadow duration-200`}
+                style={{
+                  transform: `translateX(${dragOffset}px) rotate(${rotation}deg)`,
+                  opacity,
+                  transition: isDragging ? 'none' : 'transform 0.3s ease, opacity 0.3s ease, border-color 0.2s, box-shadow 0.2s',
+                }}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseLeave}
+              >
+                {/* Word */}
+                <div className="text-center flex-1 flex flex-col items-center justify-center">
+                  <Badge variant="outline" className="text-zinc-500 border-zinc-700 text-[10px] mb-4">
+                    {currentWord.type || "—"}
+                  </Badge>
+                  <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-6 break-all">
+                    {currentWord.word}
+                  </h2>
+
+                  {/* Meaning (shown after swipe) */}
+                  {showMeaning && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="w-12 h-px bg-zinc-700 mx-auto mb-4" />
+                      <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                        {currentWord.meaning}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hint */}
+                {!showMeaning && (
+                  <p className="text-zinc-600 text-xs mt-4 animate-pulse">← ปัดซ้าย / ปัดขวา →</p>
+                )}
+              </div>
+
+              {/* Right indicator */}
+              <div className={`absolute right-0 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${dragOffset > 40 ? 'opacity-100' : 'opacity-20'}`}>
+                <div className="p-3 rounded-full bg-green-500/20 border border-green-500/50">
+                  <Check className="h-6 w-6 text-green-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Button fallbacks */}
+            <div className="flex gap-6 mt-2">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-red-500/30 text-red-400 hover:bg-red-950/30 hover:border-red-500/60 gap-2 px-6"
+                onClick={() => handleSwipe("left")}
+                disabled={showMeaning}
+              >
+                <X className="h-5 w-5" />
+                จำไม่ได้
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-green-500/30 text-green-400 hover:bg-green-950/30 hover:border-green-500/60 gap-2 px-6"
+                onClick={() => handleSwipe("right")}
+                disabled={showMeaning}
+              >
+                <Check className="h-5 w-5" />
+                จำได้
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Finished Screen */
+          <div className="text-center animate-in zoom-in duration-500">
+            <Trophy className="h-16 w-16 md:h-24 md:w-24 text-emerald-400 mx-auto mb-4 md:mb-6" />
+            <h2 className="text-4xl md:text-6xl font-black mb-2 bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
+              {subMode === "timed" ? "TIME'S UP!" : "COMPLETE!"}
+            </h2>
+            <p className="text-lg md:text-xl text-zinc-400 mb-1">
+              {subMode === "timed" ? `${totalTime} seconds` : `${totalWords} words`}
+            </p>
+            <div className="flex items-center justify-center gap-6 mb-8 mt-4">
+              <div className="text-center">
+                <p className="text-4xl md:text-5xl font-black text-green-400">{correctCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">จำได้</p>
+              </div>
+              <div className="w-px h-12 bg-zinc-700" />
+              <div className="text-center">
+                <p className="text-4xl md:text-5xl font-black text-red-400">{wrongCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">จำไม่ได้</p>
+              </div>
+              <div className="w-px h-12 bg-zinc-700" />
+              <div className="text-center">
+                <p className="text-4xl md:text-5xl font-black text-amber-400">
+                  {correctCount + wrongCount > 0 ? Math.round((correctCount / (correctCount + wrongCount)) * 100) : 0}%
+                </p>
+                <p className="text-xs text-zinc-500 mt-1">Accuracy</p>
+              </div>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <Button size="lg" className="px-8 text-lg gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={resetGame}>
+                <RotateCcw className="h-5 w-5" />
+                Try Again
+              </Button>
+              <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300" asChild>
+                <Link href="/games">Back</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
