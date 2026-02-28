@@ -371,7 +371,7 @@ export default function Dashboard() {
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                          <CardTitle className="text-xl">{v.word}</CardTitle>
+                          <CardTitle className="text-xl break-all">{v.word}</CardTitle>
                           {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
                         </div>
                         {v.type && (
