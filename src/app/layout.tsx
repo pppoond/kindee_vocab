@@ -16,8 +16,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kindee Vocab",
-  description: "A simple vocabulary learning app with a mini-game.",
+  title: {
+    default: "Kindee Vocab — แอปท่องคำศัพท์ภาษาอังกฤษ",
+    template: "%s | Kindee Vocab",
+  },
+  description: "แอปเรียนคำศัพท์ภาษาอังกฤษสุดสนุก เพิ่มคำศัพท์ ทบทวนผ่านมินิเกม Battle, Time Attack, Flashcard และอื่นๆ ช่วยให้จำคำศัพท์ได้เร็วขึ้น",
+  keywords: ["คำศัพท์ภาษาอังกฤษ", "เรียนภาษาอังกฤษ", "แอปท่องศัพท์", "vocabulary", "flashcard", "เกมคำศัพท์", "Kindee Vocab"],
+  authors: [{ name: "Kindee Vocab" }],
+  openGraph: {
+    title: "Kindee Vocab — แอปท่องคำศัพท์ภาษาอังกฤษ",
+    description: "เรียนคำศัพท์ภาษาอังกฤษสุดสนุกผ่านมินิเกมหลากหลายโหมด เพิ่มคำศัพท์ ติดตามความก้าวหน้า และทบทวนคำศัพท์ได้ทุกที่ทุกเวลา",
+    type: "website",
+    locale: "th_TH",
+    siteName: "Kindee Vocab",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="th" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
