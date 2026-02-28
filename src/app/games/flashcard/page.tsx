@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Trophy, RotateCcw, Clock, X, Check, Layers, Timer } from "lucide-react"
 import Link from "next/link"
 import { useFlashcardEngine, TIME_OPTIONS } from "@/hooks/useFlashcardEngine"
+import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 
 export default function FlashcardGame() {
   const {
@@ -16,6 +17,7 @@ export default function FlashcardGame() {
     showMeaning,
     correctCount,
     wrongCount,
+    wrongAnswers,
     totalWords,
     timeLeft,
     totalTime,
@@ -301,10 +303,11 @@ export default function FlashcardGame() {
                 <RotateCcw className="h-5 w-5" />
                 Try Again
               </Button>
-              <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300" asChild>
-                <Link href="/games">Back</Link>
-              </Button>
+              <Link href="/games">
+                <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
+              </Link>
             </div>
+            <ReviewWrongAnswers wrongAnswers={wrongAnswers} />
           </div>
         )}
       </div>

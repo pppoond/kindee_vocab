@@ -24,6 +24,7 @@ export function useTimeAttackEngine() {
   const [feedback, setFeedback] = useState<{ type: "success" | "error", message: string } | null>(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
+  const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string }[]>([])
   const [timeLeft, setTimeLeft] = useState(60)
   const [totalTime, setTotalTime] = useState(60)
 
@@ -128,6 +129,7 @@ export function useTimeAttackEngine() {
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
+      setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
       setFeedback({ type: "error", message: `Wrong! → ${currentWord?.meaning}` })
     }
 
@@ -149,6 +151,7 @@ export function useTimeAttackEngine() {
     setFeedback(null)
     setCurrentWord(null)
     setOptions([])
+    setWrongAnswers([])
   }, [])
 
   // Cleanup timer on unmount
@@ -166,6 +169,7 @@ export function useTimeAttackEngine() {
     feedback,
     correctCount,
     wrongCount,
+    wrongAnswers,
     timeLeft,
     totalTime,
     loadGame,
