@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight } from "lucide-react"
+import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers } from "lucide-react"
 import Link from "next/link"
 
 const GAME_MODES = [
@@ -40,6 +40,17 @@ const GAME_MODES = [
     badge: "SPEED",
     badgeColor: "border-cyan-500/50 text-cyan-400",
   },
+  {
+    title: "Flashcard Swipe",
+    description: "เห็นคำศัพท์แล้วปัดซ้าย-ขวา ว่าจำได้หรือไม่ มีทั้งแบบปกติและจับเวลา",
+    href: "/games/flashcard",
+    icon: Layers,
+    color: "from-emerald-500/20 to-green-500/20",
+    borderColor: "border-emerald-500/30 hover:border-emerald-500/60",
+    iconColor: "text-emerald-400",
+    badge: "SWIPE",
+    badgeColor: "border-emerald-500/50 text-emerald-400",
+  },
 ]
 
 export default function GamesPage() {
@@ -63,7 +74,7 @@ export default function GamesPage() {
       </div>
 
       {/* Game Mode Cards */}
-      <div className="max-w-4xl mx-auto px-4 pb-16 grid gap-6 md:grid-cols-3">
+      <div className="max-w-5xl mx-auto px-4 pb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {GAME_MODES.map((mode) => (
           <Link key={mode.href} href={mode.href} className="group">
             <Card className={`relative bg-zinc-900 ${mode.borderColor} border-2 transition-all duration-300 h-full group-hover:scale-[1.03] group-hover:shadow-2xl overflow-hidden`}>
