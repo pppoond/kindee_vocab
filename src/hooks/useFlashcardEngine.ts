@@ -131,7 +131,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   }, [vocabularies, saveSession])
 
   const handleSwipe = useCallback((direction: "left" | "right") => {
-    if (gameStateRef.current !== "playing" || showMeaning) return
+    if (gameStateRef.current !== "playing" || showMeaning || !currentWord) return
 
     setLastSwipe(direction)
 
@@ -174,7 +174,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
         return newQueue
       })
     }, 1000)
-  }, [showMeaning, subMode, vocabularies, saveSession])
+  }, [showMeaning, subMode, vocabularies, saveSession, currentWord])
 
   const resetGame = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
