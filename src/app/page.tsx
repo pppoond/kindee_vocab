@@ -279,28 +279,28 @@ export default function Dashboard() {
       <main className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-blue-500 dark:border-l-blue-400">
             <CardHeader className="pb-2">
               <CardDescription>Total Vocabulary</CardDescription>
               <CardTitle className="text-4xl">{totalCount}</CardTitle>
             </CardHeader>
           </Card>
           
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-violet-500 dark:border-l-violet-400">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5"><Gamepad2 className="h-3.5 w-3.5" /> Today&apos;s Games</CardDescription>
               <CardTitle className="text-4xl">{dailyStats.gamesPlayed}</CardTitle>
             </CardHeader>
           </Card>
 
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-amber-500 dark:border-l-amber-400">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> Best Level Today</CardDescription>
               <CardTitle className="text-4xl">{dailyStats.bestLevel || "—"}</CardTitle>
             </CardHeader>
           </Card>
 
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-emerald-500 dark:border-l-emerald-400">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5"><Target className="h-3.5 w-3.5" /> Today&apos;s Accuracy</CardDescription>
               <CardTitle className="text-4xl">
