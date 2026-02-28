@@ -15,7 +15,7 @@ export type TimeAttackState = "selecting" | "playing" | "finished"
 
 export const TIME_OPTIONS = [30, 60, 90, 120] // seconds
 
-export function useTimeAttackEngine() {
+export function useTimeAttackEngine(onAlert?: (message: string) => void) {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
   const [currentWord, setCurrentWord] = useState<Vocabulary | null>(null)
   const [options, setOptions] = useState<string[]>([])
@@ -79,7 +79,7 @@ export function useTimeAttackEngine() {
     if (error || !data || data.length === 0) {
       setLoading(false)
       if (!error && data?.length === 0) {
-        alert("You need at least some words to play! Add them in the dashboard.")
+        if (onAlert) onAlert("You need at least some words to play! Add them in the dashboard.")
         router.push("/")
       }
       return

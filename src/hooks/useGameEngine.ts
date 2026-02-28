@@ -16,7 +16,7 @@ export type GameMode = "normal" | "fullvocab"
 export type GameState = "playing" | "won" | "lost" | "leveling"
 export type CharacterState = "idle" | "attack" | "hurt" | "win" | "lose"
 
-export function useGameEngine(mode: GameMode) {
+export function useGameEngine(mode: GameMode, onAlert?: (message: string) => void) {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
   const [currentWord, setCurrentWord] = useState<Vocabulary | null>(null)
   const [options, setOptions] = useState<string[]>([])
@@ -92,10 +92,10 @@ export function useGameEngine(mode: GameMode) {
     if (error || !data || data.length === 0) {
       setLoading(false)
       if (!error && data?.length === 0) {
-        alert(mode === "normal" 
+        const msg = mode === "normal" 
           ? "You need at least some non-memorized words to play! Add them in the dashboard."
           : "You need at least some words to play! Add them in the dashboard."
-        )
+        if (onAlert) onAlert(msg)
         router.push("/")
       }
       return

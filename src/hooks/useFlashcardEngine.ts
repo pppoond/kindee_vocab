@@ -16,7 +16,7 @@ export type FlashcardSubMode = "normal" | "timed"
 
 export const TIME_OPTIONS = [30, 60, 90, 120]
 
-export function useFlashcardEngine() {
+export function useFlashcardEngine(onAlert?: (message: string) => void) {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
   const [queue, setQueue] = useState<Vocabulary[]>([])
   const [currentWord, setCurrentWord] = useState<Vocabulary | null>(null)
@@ -70,7 +70,7 @@ export function useFlashcardEngine() {
     if (error || !data || data.length === 0) {
       setLoading(false)
       if (!error && data?.length === 0) {
-        alert("You need at least some words to play! Add them in the dashboard.")
+        if (onAlert) onAlert("You need at least some words to play! Add them in the dashboard.")
         router.push("/")
       }
       return

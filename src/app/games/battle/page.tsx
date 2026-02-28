@@ -10,8 +10,10 @@ import { SpriteSheet } from "@/components/sprite-sheet"
 import { ASSETS, getEnemyStats } from "@/lib/game-assets"
 import { useGameEngine } from "@/hooks/useGameEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
+import { useAlert } from "@/components/alert-provider"
 
 export default function BattleGame() {
+  const { showAlert } = useAlert()
   const {
     currentWord,
     options,
@@ -30,7 +32,7 @@ export default function BattleGame() {
     loadGame,
     handleAnswer,
     resetGame,
-  } = useGameEngine("normal")
+  } = useGameEngine("normal", (msg) => showAlert(msg, { type: "error" }))
 
   useEffect(() => {
     loadGame()

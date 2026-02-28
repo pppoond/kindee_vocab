@@ -7,8 +7,10 @@ import { ArrowLeft, Trophy, RotateCcw, Clock, X, Check, Layers, Timer } from "lu
 import Link from "next/link"
 import { useFlashcardEngine, TIME_OPTIONS } from "@/hooks/useFlashcardEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
+import { useAlert } from "@/components/alert-provider"
 
 export default function FlashcardGame() {
+  const { showAlert } = useAlert()
   const {
     currentWord,
     loading,
@@ -26,7 +28,7 @@ export default function FlashcardGame() {
     startGame,
     handleSwipe,
     resetGame,
-  } = useFlashcardEngine()
+  } = useFlashcardEngine((msg) => showAlert(msg, { type: "error" }))
 
   // Swipe gesture handling
   const cardRef = useRef<HTMLDivElement>(null)

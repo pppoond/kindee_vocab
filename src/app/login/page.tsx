@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useAlert } from "@/components/alert-provider"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -18,6 +19,7 @@ export default function LoginPage() {
   
   const supabase = createClient()
   const router = useRouter()
+  const { showAlert } = useAlert()
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +33,7 @@ export default function LoginPage() {
           password,
         })
         if (error) throw error
-        alert("Check your email for the confirmation link!")
+        showAlert("Check your email for the confirmation link!", { type: "success" })
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
