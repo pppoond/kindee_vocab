@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { ASSETS, getEnemyStats, HERO_DAMAGE, getAllAssetUrls, preloadImages } from "@/lib/game-assets"
 import { useRouter } from "next/navigation"
@@ -32,17 +32,21 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
   const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string }[]>([])
+  const [timeLeft, setTimeLeft] = useState(15)
+  const [maxTime, setMaxTime] = useState(15)
 
   // Refs to track actual HP values for side-effect logic (avoids React Strict Mode double-call issues)
   const beastHpRef = useRef(getEnemyStats(1).maxHp)
   const playerHpRef = useRef(ASSETS.hero.maxHp)
   const correctCountRef = useRef(0)
   const wrongCountRef = useRef(0)
+  const timeLeftRef = useRef(15)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const supabase = createClient()
   const router = useRouter()
 
-  const setupTurn = useCallback((list: Vocabulary[]) => {
+  const setupTurn = useCallback((list: Vocabulary[], currentLevel: number) => {
     const word = list[Math.floor(Math.random() * list.length)]
     setCurrentWord(word)
 
@@ -55,6 +59,11 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     const finalOptions = [...shuffledOthers, word.meaning].sort(() => 0.5 - Math.random())
     setOptions(finalOptions)
     setFeedback(null)
+
+    const calculatedMaxTime = Math.max(5, 15 - (currentLevel - 1))
+    setMaxTime(calculatedMaxTime)
+    setTimeLeft(calculatedMaxTime)
+    timeLeftRef.current = calculatedMaxTime
   }, [])
 
   const saveSession = useCallback(async (result: "won" | "lost", finalLevel: number, correct: number, wrong: number) => {
@@ -104,7 +113,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     await preloadImages(getAllAssetUrls())
 
     setVocabularies(data)
-    setupTurn(data)
+    setupTurn(data, 1) // Initial level is 1
     setLoading(false)
   }, [supabase, router, mode, setupTurn])
 
@@ -123,8 +132,9 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setHeroState("idle")
     setDemonState("idle")
     setFeedback(null)
-    setupTurn(vocabList)
-  }, [setupTurn])
+    const newLevel = level + 1 // Use next level value
+    setupTurn(vocabList, newLevel)
+  }, [setupTurn, level])
 
   const handleAnswer = useCallback((answer: string) => {
     if (gameState !== "playing" || feedback || !currentWord) return
@@ -160,7 +170,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setDemonState("hurt")
           setTimeout(() => {
             setDemonState("idle")
-            setupTurn(vocabularies)
+            setupTurn(vocabularies, level)
           }, 1000)
         }
       }, 500)
@@ -186,12 +196,36 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setTimeout(() => {
             setHeroState("idle")
             setDemonState("idle")
-            setupTurn(vocabularies)
+            setupTurn(vocabularies, level)
           }, 1000)
         }
       }, 500)
     }
   }, [gameState, feedback, currentWord, vocabularies, level, setupTurn, startNextLevel, saveSession])
+
+  // Timer Effect
+  useEffect(() => {
+    if (gameState !== "playing" || feedback || loading) {
+      if (timerRef.current) clearInterval(timerRef.current)
+      return
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const next = Math.max(0, prev - 1)
+        timeLeftRef.current = next
+        if (next === 0) {
+          if (timerRef.current) clearInterval(timerRef.current)
+          handleAnswer("") // Timeout
+        }
+        return next
+      })
+    }, 1000)
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [gameState, feedback, loading, handleAnswer])
 
   const resetGame = useCallback(() => {
     setLevel(1)
@@ -210,6 +244,9 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setCorrectCount(0)
     setWrongCount(0)
     setWrongAnswers([])
+    setTimeLeft(15)
+    setMaxTime(15)
+    timeLeftRef.current = 15
     loadGame()
   }, [loadGame])
 
@@ -230,6 +267,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     correctCount,
     wrongCount,
     wrongAnswers,
+    timeLeft,
+    maxTime,
     // Actions
     loadGame,
     handleAnswer,

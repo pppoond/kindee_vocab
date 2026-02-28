@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, ShieldAlert, Trophy, Star, BookOpen } from "lucide-react"
+import { ArrowLeft, ShieldAlert, Trophy, Star, BookOpen, Timer } from "lucide-react"
 import Link from "next/link"
 import { SpriteSheet } from "@/components/sprite-sheet"
 import { ASSETS, getEnemyStats } from "@/lib/game-assets"
@@ -30,6 +30,8 @@ export default function FullVocabGame() {
     correctCount,
     wrongCount,
     wrongAnswers,
+    timeLeft,
+    maxTime,
     loadGame,
     handleAnswer,
     resetGame,
@@ -40,6 +42,10 @@ export default function FullVocabGame() {
   }, [loadGame])
 
   const enemyStats = getEnemyStats(level)
+
+  const timerPercent = (timeLeft / maxTime) * 100
+  const timerColor = timeLeft <= 3 ? "text-red-400" : timeLeft <= 7 ? "text-amber-400" : "text-cyan-400"
+  const barColor = timeLeft <= 3 ? "bg-red-500" : timeLeft <= 7 ? "bg-amber-500" : "bg-cyan-500"
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950">
@@ -129,7 +135,23 @@ export default function FullVocabGame() {
         {/* Game UI */}
         <div className="w-full max-w-2xl w-[95%] z-10 px-2 sm:px-0">
           {gameState === "playing" ? (
-            <Card className="bg-zinc-900 border-zinc-800 shadow-2xl overflow-hidden">
+            <>
+              {/* Timer Bar */}
+              <div className="mb-6">
+                <div className="flex items-center justify-center mb-3">
+                  <span className={`text-4xl md:text-6xl font-black tabular-nums ${timerColor} transition-colors ${timeLeft <= 3 ? 'animate-pulse' : ''}`}>
+                    {timeLeft}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                  <div
+                    className={`h-full ${barColor} transition-all duration-1000 ease-linear`}
+                    style={{ width: `${timerPercent}%` }}
+                  />
+                </div>
+              </div>
+
+              <Card className="bg-zinc-900 border-zinc-800 shadow-2xl overflow-hidden">
               <div className="bg-purple-500/10 p-2 text-center border-b border-zinc-800">
                 <Badge variant="outline" className="text-purple-400 border-purple-700/50 text-[10px] md:text-xs">Full Vocab Mode — Choose the correct meaning</Badge>
               </div>
@@ -156,6 +178,7 @@ export default function FullVocabGame() {
                 </div>
               )}
             </Card>
+          </>
           ) : gameState === "leveling" ? (
             <div className="text-center animate-in zoom-in duration-500">
               <Star className="h-16 w-16 md:h-24 md:w-24 text-amber-400 mx-auto mb-4 md:mb-6 animate-spin" />
