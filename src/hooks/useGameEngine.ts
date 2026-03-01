@@ -42,6 +42,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const wrongCountRef = useRef(0)
   const timeLeftRef = useRef(15)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const isSavedRef = useRef(false)
+  const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, result: "lost" as "won" | "lost" | "finished" })
 
   const supabase = createClient()
   const router = useRouter()
@@ -66,10 +68,14 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     timeLeftRef.current = calculatedMaxTime
   }, [])
 
-  const saveSession = useCallback(async (result: "won" | "lost", finalLevel: number, correct: number, wrong: number) => {
+  const saveSession = useCallback(async (result: "won" | "lost" | "finished", finalLevel: number, correct: number, wrong: number) => {
+    if (isSavedRef.current) return
+    isSavedRef.current = true
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    console.log("Saving session (Batched):", { result, finalLevel, correct, wrong })
     await supabase.from("game_sessions").insert([{
       user_id: user.id,
       mode,
@@ -159,8 +165,13 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("win")
           setDemonState("lose")
 
-          // Save session for this cleared level
-          saveSession("won", level, correctCountRef.current, wrongCountRef.current)
+          // Update ref for potential unmount save
+          sessionDataRef.current = { 
+            level, 
+            correct: correctCountRef.current, 
+            wrong: wrongCountRef.current, 
+            result: "won" 
+          }
 
           // Auto-advance after a short delay
           setTimeout(() => {
@@ -190,6 +201,13 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setGameState("lost")
           setHeroState("lose")
           setDemonState("win")
+          
+          sessionDataRef.current = { 
+            level, 
+            correct: correctCountRef.current, 
+            wrong: wrongCountRef.current, 
+            result: "lost" 
+          }
           saveSession("lost", level, correctCountRef.current, wrongCountRef.current)
         } else {
           setHeroState("hurt")
@@ -227,6 +245,18 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     }
   }, [gameState, feedback, loading, handleAnswer])
 
+  // Save on cleanup if not saved yet (e.g., user leaves early)
+  useEffect(() => {
+    return () => {
+      if (!isSavedRef.current && correctCountRef.current > 0) {
+        // We use a small hack for cleanup save: using a sync check but the save itself is async.
+        // For Supabase, we can't easily wait for unmount, but this triggers the request.
+        const { result, level: finalLevel, correct, wrong } = sessionDataRef.current
+        saveSession(result, finalLevel, correct, wrong)
+      }
+    }
+  }, [saveSession])
+
   const resetGame = useCallback(() => {
     setLevel(1)
     const stats = getEnemyStats(1)
@@ -247,6 +277,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setTimeLeft(15)
     setMaxTime(15)
     timeLeftRef.current = 15
+    isSavedRef.current = false
+    sessionDataRef.current = { level: 1, correct: 0, wrong: 0, result: "lost" }
     loadGame()
   }, [loadGame])
 
