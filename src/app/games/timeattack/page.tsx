@@ -10,6 +10,7 @@ import { useTimeAttackEngine, TIME_OPTIONS } from "@/hooks/useTimeAttackEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
+import { AdBanner } from "@/components/ad-banner"
 
 export default function TimeAttackGame() {
   const { showAlert } = useAlert()
@@ -166,6 +167,9 @@ export default function TimeAttackGame() {
                 <p className="text-xs text-zinc-500 mt-1">Accuracy</p>
               </div>
             </div>
+            
+            <AdBanner position="game_result" className="my-8" />
+
             <div className="flex gap-4 justify-center">
               <Button size="lg" className="px-8 text-lg gap-2" onClick={resetGame}>
                 <RotateCcw className="h-5 w-5" />
