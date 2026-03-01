@@ -32,6 +32,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
   const wrongCountRef = useRef(0)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const gameStateRef = useRef<TimeAttackState>("selecting")
+  const isSavedRef = useRef(false)
 
   const supabase = createClient()
   const router = useRouter()
@@ -52,6 +53,9 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
   }, [])
 
   const saveSession = useCallback(async (correct: number, wrong: number) => {
+    if (isSavedRef.current) return
+    isSavedRef.current = true
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
@@ -140,6 +144,16 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     }, 600)
   }, [feedback, currentWord, vocabularies, setupTurn])
 
+  // Cleanup/Save on exit
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (!isSavedRef.current && correctCountRef.current > 0) {
+        saveSession(correctCountRef.current, wrongCountRef.current)
+      }
+    }
+  }, [saveSession])
+
   const resetGame = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
     setGameState("selecting")
@@ -152,14 +166,10 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     setCurrentWord(null)
     setOptions([])
     setWrongAnswers([])
+    isSavedRef.current = false
   }, [])
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
+  // Cleanup timer moved to session save effect
 
   return {
     currentWord,

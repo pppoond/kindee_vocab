@@ -36,6 +36,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   const wrongCountRef = useRef(0)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const gameStateRef = useRef<FlashcardMode>("selecting")
+  const isSavedRef = useRef(false)
 
   const supabase = createClient()
   const router = useRouter()
@@ -81,6 +82,9 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   }, [supabase, router])
 
   const saveSession = useCallback(async (correct: number, wrong: number) => {
+    if (isSavedRef.current) return
+    isSavedRef.current = true
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
@@ -176,6 +180,16 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
     }, 1000)
   }, [showMeaning, subMode, vocabularies, saveSession, currentWord])
 
+  // Cleanup/Save on exit
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (!isSavedRef.current && correctCountRef.current > 0) {
+        saveSession(correctCountRef.current, wrongCountRef.current)
+      }
+    }
+  }, [saveSession])
+
   const resetGame = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
     setGameState("selecting")
@@ -189,13 +203,10 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
     setCurrentWord(null)
     setQueue([])
     setWrongAnswers([])
+    isSavedRef.current = false
   }, [])
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
+  // Cleanup timer moved to session save effect
 
   return {
     currentWord,

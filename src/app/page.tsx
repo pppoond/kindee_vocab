@@ -80,7 +80,7 @@ export default function Dashboard() {
 
     let query = supabase
       .from("vocabularies")
-      .select("*", { count: "exact" })
+      .select("id, word, type, meaning, example, memorized, created_at", { count: "exact" })
       .order("created_at", { ascending: false })
 
     if (search.trim()) {
@@ -140,7 +140,7 @@ export default function Dashboard() {
     
     const { data, error } = await supabase
       .from("game_sessions")
-      .select("*")
+      .select("level, correct_count, wrong_count")
       .gte("played_at", today.toISOString())
     
     if (!error && data) {
