@@ -12,6 +12,7 @@ import { useGameEngine } from "@/hooks/useGameEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
+import { AdBanner } from "@/components/ad-banner"
 
 export default function BattleGame() {
   const { showAlert } = useAlert()
@@ -197,6 +198,9 @@ export default function BattleGame() {
                   <p className="text-sm text-zinc-500 mb-6 md:mb-8">✅ {correctCount} correct / ❌ {wrongCount} wrong</p>
                 </>
               )}
+              
+              <AdBanner position="game_result" className="my-8" />
+
               <div className="flex gap-4 justify-center">
                 <Button size="lg" className="px-8 text-lg" onClick={resetGame}>Try Again</Button>
                 <Link href="/games">

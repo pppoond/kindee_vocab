@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
 import { Loader2 } from "lucide-react"
+import { AdBanner } from "@/components/ad-banner"
 
 type Vocabulary = {
   id: string
@@ -318,6 +319,8 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
         </div>
+
+        <AdBanner position="dashboard_middle" />
 
         <div className="mb-8">
           <Button 

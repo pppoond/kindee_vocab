@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers } from "lucide-react"
 import Link from "next/link"
+import { AdBanner } from "@/components/ad-banner"
 
 const GAME_MODES = [
   {
@@ -99,6 +100,10 @@ export default function GamesPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 pb-16">
+        <AdBanner position="games_bottom" />
       </div>
     </div>
   )
