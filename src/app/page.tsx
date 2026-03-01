@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -266,7 +266,7 @@ export default function Dashboard() {
               <div className="bg-primary/10 p-1.5 rounded-lg border border-primary/20">
                 <img src="/assets/logos/logo.png" alt="Kindee Vocab" className="h-7 w-7 object-contain" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Kindee Vocab</h1>
+              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hidden sm:block">Kindee Vocab</h1>
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -276,10 +276,20 @@ export default function Dashboard() {
                 <span className="hidden sm:inline">Play Game</span>
               </Button>
             </Link>
-            <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
-            </Button>
+            
+            {/* Profile & Support */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="bg-zinc-900 border-zinc-800 text-rose-400 hover:bg-rose-950/20 hover:text-rose-400 gap-2 border-rose-500/20 shadow-[0_0_15px_rgba(225,29,72,0.1)]" asChild>
+                <Link href="/donate">
+                  <Heart className="h-4 w-4 fill-rose-500 animate-pulse" />
+                  <span className="hidden sm:inline">Support</span>
+                </Link>
+              </Button>
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
