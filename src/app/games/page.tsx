@@ -52,6 +52,17 @@ const GAME_MODES = [
     badge: "SWIPE",
     badgeColor: "border-emerald-500/50 text-emerald-400",
   },
+  {
+    title: "Verb Master",
+    description: "ท้าทายความจำกริยา 3 ช่อง! เติม V2 และ V3 ให้ถูกต้องและรวดเร็วที่สุด",
+    href: "/games/verb-master",
+    icon: BookOpen,
+    color: "from-amber-500/20 to-yellow-500/20",
+    borderColor: "border-amber-500/30 hover:border-amber-500/60",
+    iconColor: "text-amber-400",
+    badge: "VERB",
+    badgeColor: "border-amber-500/50 text-amber-400",
+  },
 ]
 
 export default function GamesPage() {

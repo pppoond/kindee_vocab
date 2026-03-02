@@ -30,6 +30,8 @@ type Vocabulary = {
   word: string
   type: string
   meaning: string
+  v2?: string
+  v3?: string
   example: string
   memorized: boolean
   created_at: string
@@ -61,7 +63,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [open, setOpen] = useState(false)
   const [editingWord, setEditingWord] = useState<Vocabulary | null>(null)
-  const [formData, setFormData] = useState({ word: "", type: "", meaning: "", example: "" })
+  const [formData, setFormData] = useState({ word: "", type: "", meaning: "", v2: "", v3: "", example: "" })
   const [saving, setSaving] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -171,7 +173,7 @@ export default function Dashboard() {
 
   const handleOpenAdd = () => {
     setEditingWord(null)
-    setFormData({ word: "", type: "", meaning: "", example: "" })
+    setFormData({ word: "", type: "", meaning: "", v2: "", v3: "", example: "" })
     setOpen(true)
   }
 
@@ -181,6 +183,8 @@ export default function Dashboard() {
       word: v.word, 
       type: v.type || "", 
       meaning: v.meaning, 
+      v2: v.v2 || "",
+      v3: v.v3 || "",
       example: v.example || "" 
     })
     setOpen(true)
@@ -198,6 +202,8 @@ export default function Dashboard() {
             word: formData.word, 
             type: formData.type, 
             meaning: formData.meaning, 
+            v2: formData.v2,
+            v3: formData.v3,
             example: formData.example 
           })
           .eq("id", editingWord.id)
@@ -274,6 +280,13 @@ export default function Dashboard() {
               <Button variant="outline" className="gap-2">
                 <Gamepad2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Play Game</span>
+              </Button>
+            </Link>
+
+            <Link href="/verb3">
+              <Button variant="outline" className="gap-2">
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Verb 3 Channels</span>
               </Button>
             </Link>
             
@@ -380,6 +393,28 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
               </div>
+              {formData.type === "Verb" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="v2">Verb 2 (Past Simple)</Label>
+                    <Input 
+                      id="v2" 
+                      value={formData.v2} 
+                      onChange={e => setFormData({ ...formData, v2: e.target.value })}
+                      placeholder="e.g. went" 
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="v3">Verb 3 (Past Participle)</Label>
+                    <Input 
+                      id="v3" 
+                      value={formData.v3} 
+                      onChange={e => setFormData({ ...formData, v3: e.target.value })}
+                      placeholder="e.g. gone" 
+                    />
+                  </div>
+                </div>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="meaning">Meaning</Label>
                 <Textarea 
@@ -468,7 +503,14 @@ export default function Dashboard() {
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                          <CardTitle className="text-xl break-all">{v.word}</CardTitle>
+                          <CardTitle className="text-xl break-all">
+                            {v.word}
+                            {v.type === "Verb" && (v.v2 || v.v3) && (
+                              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                ({v.v2 || "-"} • {v.v3 || "-"})
+                              </span>
+                            )}
+                          </CardTitle>
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-primary shrink-0" onClick={() => speakWord(v.word)}>
                             <Volume2 className="h-4 w-4" />
                           </Button>

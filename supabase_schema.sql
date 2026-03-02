@@ -5,6 +5,8 @@ CREATE TABLE vocabularies (
   word TEXT NOT NULL,
   type TEXT,
   meaning TEXT NOT NULL,
+  v2 TEXT,
+  v3 TEXT,
   example TEXT,
   memorized BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
