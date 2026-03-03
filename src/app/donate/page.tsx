@@ -10,12 +10,18 @@ import { Loading } from "@/components/ui/loading"
 
 export default function DonatePage() {
   const [settings, setSettings] = useState<Record<string, string>>({})
+  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    async function fetchSettings() {
+    async function fetchData() {
+      // Fetch User
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+
+      // Fetch Settings
       const { data, error } = await supabase
         .from("system_settings")
         .select("key, value")
@@ -29,7 +35,7 @@ export default function DonatePage() {
       }
       setLoading(false)
     }
-    fetchSettings()
+    fetchData()
   }, [supabase])
 
   const copyToClipboard = (text: string) => {
@@ -55,9 +61,9 @@ export default function DonatePage() {
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-rose-500/30">
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50">
-        <Link href="/dashboard">
+        <Link href={user ? "/dashboard" : "/"}>
           <Button variant="ghost" className="text-zinc-400 hover:text-white transition-colors">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            <ArrowLeft className="mr-2 h-4 w-4" /> {user ? "Back to Dashboard" : "Back to Home"}
           </Button>
         </Link>
         <div className="flex items-center gap-2 text-zinc-500 text-sm font-medium">
