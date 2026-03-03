@@ -172,33 +172,56 @@ export function LandingClient() {
             แฟลชการ์ดอัจฉริยะ และระบบติดตามความก้าวหน้าส่วนตัว
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={user ? "/dashboard" : "/login?tab=signup"}>
-              <Button size="lg" className="rounded-full h-14 px-8 text-lg bg-amber-500 hover:bg-amber-600 border-none shadow-[0_10px_20px_-10px_rgba(245,158,11,0.5)]">
-                Start Learning Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/games">
-              <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900">
-                Explore Games <Gamepad2 className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
+          {/* Epic Battle Scene */}
+          <div className="mt-16 relative mx-auto max-w-5xl h-[400px] md:h-[600px] flex items-center justify-center overflow-visible">
+            {/* Background Glows */}
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-amber-500/20 rounded-full blur-[100px] -z-10 animate-pulse" />
+            <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px] -z-10 animate-pulse-slow" />
 
-          {/* Hero Image Mockup (Conceptual) */}
-          <div className="mt-16 mx-auto max-w-5xl rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-100/50 dark:bg-zinc-900/50 p-4 backdrop-blur-sm animate-float">
-            <div className="aspect-[16/9] rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center overflow-hidden">
-               <div className="relative w-full h-full flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[url('/assets/backgrounds/forest.jpg')] bg-cover bg-center opacity-30 blur-sm" />
-                  <div className="relative z-10 flex flex-col items-center gap-6 p-8">
-                     <img src="/assets/logos/logo.png" alt="Logo" className="w-24 h-24 object-contain animate-pulse-slow" />
-                     <div className="flex gap-4">
-                        <div className="h-12 w-32 rounded-lg bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center font-bold text-white">Apple</div>
-                        <div className="h-12 w-32 rounded-lg bg-amber-500/20 border border-amber-500/40 backdrop-blur-md flex items-center justify-center font-bold text-amber-500">Kindee</div>
-                        <div className="h-12 w-32 rounded-lg bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center font-bold text-white">Banana</div>
-                     </div>
-                  </div>
-               </div>
+            {/* VS Badge */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 scale-75 md:scale-100">
+              <div className="relative">
+                <div className="absolute inset-0 bg-white dark:bg-amber-500 rounded-full blur-2xl opacity-20 animate-ping" />
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white font-black text-4xl md:text-6xl p-6 rounded-full border-4 border-white dark:border-zinc-900 shadow-2xl skew-x-[-12deg] rotate-[-5deg]">
+                  VS
+                </div>
+              </div>
+            </div>
+
+            {/* Character Container */}
+            <div className="w-full flex items-center justify-between gap-4 md:gap-20">
+              {/* Hero (Left) */}
+              <div className="relative flex-1 animate-float-slow group">
+                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/20 blur-xl rounded-full" />
+                <img 
+                  src="/assets/pages/home/hero_red.png" 
+                  alt="Kindee Hero" 
+                  className="w-full h-auto drop-shadow-[0_20px_50px_rgba(245,158,11,0.4)] transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute -top-10 left-0 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl hidden lg:block rotate-[-10deg]">
+                  <span className="font-bold text-amber-500">Kindee Hero</span>
+                </div>
+              </div>
+
+              {/* Demon Lord (Right) */}
+              <div className="relative flex-1 animate-float group">
+                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/20 blur-xl rounded-full" />
+                <img 
+                  src="/assets/pages/home/demon_load_black.png" 
+                  alt="Demon Lord" 
+                  className="w-full h-auto drop-shadow-[0_20px_50px_rgba(147,51,234,0.4)] transition-transform duration-500 group-hover:scale-110 scale-x-[-1]"
+                />
+                <div className="absolute -top-10 right-0 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl hidden lg:block rotate-[10deg]">
+                  <span className="font-bold text-purple-500">Demon Lord</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Impact Particles (Conceptual) */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-amber-400 rounded-full animate-ping delay-0" />
+               <div className="absolute top-1/2 left-1/2 -translate-x-[60%] -translate-y-[40%] w-3 h-3 bg-purple-400 rounded-full animate-ping delay-300" />
+               <div className="absolute top-1/2 left-1/2 -translate-x-[40%] -translate-y-[60%] w-2 h-2 bg-white rounded-full animate-ping delay-700" />
             </div>
           </div>
         </div>
@@ -317,6 +340,11 @@ export function LandingClient() {
           50% { transform: translateY(-10px); }
           100% { transform: translateY(0px); }
         }
+        @keyframes float-slow {
+          0% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(2deg); }
+          100% { transform: translateY(0px) rotate(0deg); }
+        }
         @keyframes pulse-slow {
           0% { transform: scale(1); opacity: 0.8; }
           50% { transform: scale(1.05); opacity: 1; }
@@ -327,6 +355,9 @@ export function LandingClient() {
         }
         .animate-float {
           animation: float 4s ease-in-out infinite;
+        }
+        .animate-float-slow {
+          animation: float-slow 8s ease-in-out infinite;
         }
         .animate-pulse-slow {
           animation: pulse-slow 3s ease-in-out infinite;
