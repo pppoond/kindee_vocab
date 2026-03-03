@@ -55,9 +55,9 @@ export default function DonatePage() {
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-rose-500/30">
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50">
-        <Link href="/">
+        <Link href="/dashboard">
           <Button variant="ghost" className="text-zinc-400 hover:text-white transition-colors">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
           </Button>
         </Link>
         <div className="flex items-center gap-2 text-zinc-500 text-sm font-medium">

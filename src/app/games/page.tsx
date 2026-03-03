@@ -71,7 +71,7 @@ export default function GamesPage() {
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
-          <Link href="/">
+          <Link href="/dashboard">
             <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Dashboard</span>
           </Link>
         </Button>
