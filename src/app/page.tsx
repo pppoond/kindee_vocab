@@ -1,593 +1,306 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { 
+  Gamepad2, 
+  Heart, 
+  ChevronRight, 
+  Sparkles, 
+  Brain, 
+  Trophy, 
+  Zap,
+  LayoutDashboard,
+  ArrowRight
+} from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useAlert } from "@/components/alert-provider"
-import { Loading } from "@/components/ui/loading"
-import { Loader2 } from "lucide-react"
-import { AdBanner } from "@/components/ad-banner"
 
-type Vocabulary = {
-  id: string
-  word: string
-  type: string
-  meaning: string
-  v2?: string
-  v3?: string
-  example: string
-  memorized: boolean
-  created_at: string
-}
-
-const WORD_TYPES = [
-  "Noun",
-  "Verb",
-  "Adjective",
-  "Adverb",
-  "Pronoun",
-  "Preposition",
-  "Conjunction",
-  "Interjection"
-]
-
-const PAGE_SIZE = 25
-
-type DailyStats = {
-  gamesPlayed: number
-  bestLevel: number
-  correctCount: number
-  wrongCount: number
-}
-
-export default function Dashboard() {
-  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
-  const [loading, setLoading] = useState(true)
+export default function LandingPage() {
   const [user, setUser] = useState<any>(null)
-  const [open, setOpen] = useState(false)
-  const [editingWord, setEditingWord] = useState<Vocabulary | null>(null)
-  const [formData, setFormData] = useState({ word: "", type: "", meaning: "", v2: "", v3: "", example: "" })
-  const [saving, setSaving] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalCount, setTotalCount] = useState(0)
-  const [dailyStats, setDailyStats] = useState<DailyStats>({ gamesPlayed: 0, bestLevel: 0, correctCount: 0, wrongCount: 0 })
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterType, setFilterType] = useState("all")
-  const [filterMemorized, setFilterMemorized] = useState("all")
-  
   const supabase = createClient()
-  const router = useRouter()
-  const { showAlert, showConfirm } = useAlert()
-
-  const fetchVocabularies = useCallback(async (page: number, search = searchQuery, type = filterType, memorized = filterMemorized) => {
-    setLoading(true)
-    const from = (page - 1) * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-
-    let query = supabase
-      .from("vocabularies")
-      .select("id, word, type, meaning, example, memorized, created_at", { count: "exact" })
-      .order("created_at", { ascending: false })
-
-    if (search.trim()) {
-      query = query.or(`word.ilike.%${search.trim()}%,meaning.ilike.%${search.trim()}%`)
-    }
-    if (type !== "all") {
-      query = query.eq("type", type)
-    }
-    if (memorized === "yes") {
-      query = query.eq("memorized", true)
-    } else if (memorized === "no") {
-      query = query.eq("memorized", false)
-    }
-
-    const { data, error, count } = await query.range(from, to)
-    
-    if (error) {
-      console.error(error)
-    } else {
-      setVocabularies(data || [])
-      if (count !== null) setTotalCount(count)
-    }
-    setLoading(false)
-  }, [supabase, searchQuery, filterType, filterMemorized])
-
-  const speakWord = (word: string) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(word)
-      utterance.lang = 'en-US'
-      utterance.rate = 0.9
-      window.speechSynthesis.speak(utterance)
-    }
-  }
-
-  const handleSearch = (value: string) => {
-    setSearchQuery(value)
-    setCurrentPage(1)
-    fetchVocabularies(1, value, filterType, filterMemorized)
-  }
-
-  const handleFilterType = (value: string) => {
-    setFilterType(value)
-    setCurrentPage(1)
-    fetchVocabularies(1, searchQuery, value, filterMemorized)
-  }
-
-  const handleFilterMemorized = (value: string) => {
-    setFilterMemorized(value)
-    setCurrentPage(1)
-    fetchVocabularies(1, searchQuery, filterType, value)
-  }
-
-  const fetchDailyStats = useCallback(async () => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const { data, error } = await supabase
-      .from("game_sessions")
-      .select("level, correct_count, wrong_count")
-      .gte("played_at", today.toISOString())
-    
-    if (!error && data) {
-      const stats: DailyStats = {
-        gamesPlayed: data.length,
-        bestLevel: data.length > 0 ? Math.max(...data.map(s => s.level)) : 0,
-        correctCount: data.reduce((sum, s) => sum + s.correct_count, 0),
-        wrongCount: data.reduce((sum, s) => sum + s.wrong_count, 0),
-      }
-      setDailyStats(stats)
-    }
-  }, [supabase])
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push("/login")
-        return
-      }
       setUser(user)
-      fetchVocabularies(currentPage)
-      fetchDailyStats()
     }
     getUser()
-  }, [currentPage, fetchVocabularies, fetchDailyStats, router, supabase.auth])
-
-  const handleOpenAdd = () => {
-    setEditingWord(null)
-    setFormData({ word: "", type: "", meaning: "", v2: "", v3: "", example: "" })
-    setOpen(true)
-  }
-
-  const handleOpenEdit = (v: Vocabulary) => {
-    setEditingWord(v)
-    setFormData({ 
-      word: v.word, 
-      type: v.type || "", 
-      meaning: v.meaning, 
-      v2: v.v2 || "",
-      v3: v.v3 || "",
-      example: v.example || "" 
-    })
-    setOpen(true)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-
-    try {
-      if (editingWord) {
-        const { error } = await supabase
-          .from("vocabularies")
-          .update({ 
-            word: formData.word, 
-            type: formData.type, 
-            meaning: formData.meaning, 
-            v2: formData.v2,
-            v3: formData.v3,
-            example: formData.example 
-          })
-          .eq("id", editingWord.id)
-        
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from("vocabularies")
-          .insert([
-            { 
-              ...formData,
-              user_id: user.id 
-            }
-          ])
-        
-        if (error) throw error
-      }
-      
-      setOpen(false)
-      fetchVocabularies(currentPage)
-    } catch (err: any) {
-      showAlert(err.message, { type: "error" })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const toggleMemorized = async (id: string, current: boolean) => {
-    const { error } = await supabase
-      .from("vocabularies")
-      .update({ memorized: !current })
-      .eq("id", id)
-    
-    if (!error) {
-      setVocabularies(vocabularies.map(v => v.id === id ? { ...v, memorized: !current } : v))
-    }
-  }
-
-  const deleteWord = async (id: string) => {
-    const confirmed = await showConfirm("Are you sure you want to delete this word?")
-    if (!confirmed) return
-    const { error } = await supabase
-      .from("vocabularies")
-      .delete()
-      .eq("id", id)
-    
-    if (!error) {
-      fetchVocabularies(currentPage)
-    }
-  }
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
-
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE)
+  }, [supabase.auth])
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-md dark:bg-black/80">
-        <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="bg-primary/10 p-1.5 rounded-lg border border-primary/20">
-                <img src="/assets/logos/logo.png" alt="Kindee Vocab" className="h-7 w-7 object-contain" />
-              </div>
-              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hidden sm:block">Kindee Vocab</h1>
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/games">
-              <Button variant="outline" className="gap-2">
-                <Gamepad2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Play Game</span>
-              </Button>
-            </Link>
-
-            <Link href="/verb3">
-              <Button variant="outline" className="gap-2">
-                <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline">Verb 3 Channels</span>
-              </Button>
-            </Link>
-            
-            {/* Profile & Support */}
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="bg-zinc-900 border-zinc-800 text-rose-400 hover:bg-rose-950/20 hover:text-rose-400 gap-2 border-rose-500/20 shadow-[0_0_15px_rgba(225,29,72,0.1)]" asChild>
-                <Link href="/donate">
-                  <Heart className="h-4 w-4 fill-rose-500 animate-pulse" />
-                  <span className="hidden sm:inline">Support</span>
-                </Link>
-              </Button>
-              <ThemeToggle />
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-5 w-5" />
-              </Button>
+    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-zinc-100 overflow-x-hidden">
+      {/* Navbar */}
+      <nav className="fixed top-0 w-full z-50 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white/70 dark:bg-black/70 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-amber-500/10 p-1.5 rounded-xl border border-amber-500/20">
+              <img src="/assets/logos/logo.png" alt="Kindee Vocab" className="h-8 w-8 object-contain" />
             </div>
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Kindee Vocab</span>
           </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-blue-500 dark:border-l-blue-400">
-            <CardHeader className="pb-2">
-              <CardDescription>Total Vocabulary</CardDescription>
-              <CardTitle className="text-4xl">{totalCount}</CardTitle>
-            </CardHeader>
-          </Card>
           
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-violet-500 dark:border-l-violet-400">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5"><Gamepad2 className="h-3.5 w-3.5" /> Today&apos;s Games</CardDescription>
-              <CardTitle className="text-4xl">{dailyStats.gamesPlayed}</CardTitle>
-            </CardHeader>
-          </Card>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <Link href="#features" className="hover:text-amber-500 transition-colors">ฟีเจอร์</Link>
+            <Link href="/games" className="hover:text-amber-500 transition-colors">Games</Link>
+            <Link href="/verb3" className="hover:text-amber-500 transition-colors">กริยา 3 ช่อง</Link>
+            <Link href="/donate" className="hover:text-rose-500 transition-colors flex items-center gap-1.5">
+              <Heart className="h-4 w-4 fill-rose-500" /> สนับสนุน
+            </Link>
+          </div>
 
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-amber-500 dark:border-l-amber-400">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> Best Level Today</CardDescription>
-              <CardTitle className="text-4xl">{dailyStats.bestLevel || "—"}</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-emerald-500 dark:border-l-emerald-400">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5"><Target className="h-3.5 w-3.5" /> Today&apos;s Accuracy</CardDescription>
-              <CardTitle className="text-4xl">
-                {dailyStats.correctCount + dailyStats.wrongCount > 0
-                  ? `${Math.round((dailyStats.correctCount / (dailyStats.correctCount + dailyStats.wrongCount)) * 100)}%`
-                  : "—"}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        <AdBanner position="dashboard_middle" />
-
-        <div className="mb-8">
-          <Button 
-            className="w-full h-auto flex-col items-center justify-center gap-2 py-6 text-lg"
-            onClick={handleOpenAdd}
-          >
-            <Plus className="h-8 w-8" />
-            Add New Word
-          </Button>
-        </div>
-
-        {/* Add/Edit Dialog */}
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingWord ? "Edit Vocabulary" : "Add New Vocabulary"}</DialogTitle>
-              <DialogDescription>
-                Help yourself remember more words.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="word">Word</Label>
-                <Input 
-                  id="word" 
-                  value={formData.word} 
-                  onChange={e => setFormData({ ...formData, word: e.target.value })}
-                  placeholder="e.g. Persistence" 
-                  required 
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="type">Type</Label>
-                <Select 
-                  value={formData.type} 
-                  onValueChange={(value) => setFormData({ ...formData, type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WORD_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {formData.type === "Verb" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="v2">Verb 2 (Past Simple)</Label>
-                    <Input 
-                      id="v2" 
-                      value={formData.v2} 
-                      onChange={e => setFormData({ ...formData, v2: e.target.value })}
-                      placeholder="e.g. went" 
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="v3">Verb 3 (Past Participle)</Label>
-                    <Input 
-                      id="v3" 
-                      value={formData.v3} 
-                      onChange={e => setFormData({ ...formData, v3: e.target.value })}
-                      placeholder="e.g. gone" 
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="grid gap-2">
-                <Label htmlFor="meaning">Meaning</Label>
-                <Textarea 
-                  id="meaning" 
-                  rows={3}
-                  value={formData.meaning} 
-                  onChange={e => setFormData({ ...formData, meaning: e.target.value })}
-                  placeholder="e.g. The quality that allows someone to continue doing something" 
-                  required 
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="example">Example Sentence</Label>
-                <Textarea 
-                  id="example" 
-                  rows={3}
-                  value={formData.example} 
-                  onChange={e => setFormData({ ...formData, example: e.target.value })}
-                  placeholder="e.g. Her persistence paid off when she finally won." 
-                />
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : editingWord ? "Update Word" : "Save Word"}
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            {user ? (
+              <Link href="/dashboard">
+                <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">
+                  Go to Dashboard <LayoutDashboard className="ml-2 h-4 w-4" />
                 </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Your Word List</h2>
-          </div>
-
-          {/* Search & Filter */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search words or meanings..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filterType} onValueChange={handleFilterType}>
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                {WORD_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterMemorized} onValueChange={handleFilterMemorized}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="no">Not Memorized</SelectItem>
-                <SelectItem value="yes">Memorized</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {loading ? (
-            <Loading text="Loading words..." className="py-12" />
-          ) : vocabularies.length === 0 ? (
-            <Card className="p-12 text-center border-dashed">
-              <CardDescription>No words added yet. Start by adding your first word!</CardDescription>
-            </Card>
-          ) : (
-            <>
-              <div className="grid gap-4">
-                {vocabularies.map((v) => (
-                  <Card key={v.id} className={`transition-all ${v.memorized ? 'opacity-60 grayscale' : 'hover:border-primary/50 shadow-sm'}`}>
-                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-3">
-                          <CardTitle className="text-xl break-all">
-                            {v.word}
-                            {v.type === "Verb" && (v.v2 || v.v3) && (
-                              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                                ({v.v2 || "-"} • {v.v3 || "-"})
-                              </span>
-                            )}
-                          </CardTitle>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-primary shrink-0" onClick={() => speakWord(v.word)}>
-                            <Volume2 className="h-4 w-4" />
-                          </Button>
-                          {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
-                        </div>
-                        {v.type && (
-                          <div className="flex">
-                            <Badge variant="secondary" className="text-xs">{v.type}</Badge>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={v.memorized ? "text-zinc-400" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
-                          onClick={() => toggleMemorized(v.id, v.memorized)}
-                        >
-                          {v.memorized ? "Unmark" : "Mark Memorized"}
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-zinc-400">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenEdit(v)} className="gap-2">
-                              <Pencil className="h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => deleteWord(v.id)} className="gap-2 text-red-600 focus:text-red-600">
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">{v.meaning}</p>
-                      {v.example && (
-                        <p className="text-sm text-zinc-500 italic">"{v.example}"</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/login">
+                  <Button variant="ghost" className="rounded-full hover:bg-amber-500/10">Sign In</Button>
+                </Link>
+                <Link href="/login?tab=signup">
+                  <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">Get Started</Button>
+                </Link>
               </div>
-
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-4 mt-8">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+            )}
+          </div>
         </div>
-      </main>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        {/* Decorative Circles */}
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-amber-500/20 rounded-full blur-[120px] -z-10 animate-pulse" />
+        <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-orange-500/20 rounded-full blur-[120px] -z-10" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-sm font-medium mb-6 animate-fade-in">
+            <Sparkles className="h-4 w-4" />
+            <span>เก่งศัพท์อังกฤษได้ไวขึ้น สนุกเหมือนเล่นเกม</span>
+          </div>
+          
+          <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 bg-clip-text text-transparent leading-[1.15]">
+            Level Up Your <br className="hidden md:block" />
+            <span className="text-amber-500">Vocabulary Master</span>
+          </h1>
+          
+          <p className="max-w-2xl mx-auto text-lg text-zinc-600 dark:text-zinc-400 mb-10 leading-relaxed ThaiFont">
+            Kindee Vocab ช่วยให้คุณจำศัพท์ได้นานขึ้นผ่านมินิเกมสุดมันส์ 
+            แฟลชการ์ดอัจฉริยะ และระบบติดตามความก้าวหน้าส่วนตัว
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href={user ? "/dashboard" : "/login?tab=signup"}>
+              <Button size="lg" className="rounded-full h-14 px-8 text-lg bg-amber-500 hover:bg-amber-600 border-none shadow-[0_10px_20px_-10px_rgba(245,158,11,0.5)]">
+                Start Learning Now <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/games">
+              <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                Explore Games <Gamepad2 className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Hero Image Mockup (Conceptual) */}
+          <div className="mt-16 mx-auto max-w-5xl rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-100/50 dark:bg-zinc-900/50 p-4 backdrop-blur-sm animate-float">
+            <div className="aspect-[16/9] rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center overflow-hidden">
+               <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[url('/assets/backgrounds/forest.jpg')] bg-cover bg-center opacity-30 blur-sm" />
+                  <div className="relative z-10 flex flex-col items-center gap-6 p-8">
+                     <img src="/assets/logos/logo.png" alt="Logo" className="w-24 h-24 object-contain animate-pulse-slow" />
+                     <div className="flex gap-4">
+                        <div className="h-12 w-32 rounded-lg bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center font-bold text-white">Apple</div>
+                        <div className="h-12 w-32 rounded-lg bg-amber-500/20 border border-amber-500/40 backdrop-blur-md flex items-center justify-center font-bold text-amber-500">Kindee</div>
+                        <div className="h-12 w-32 rounded-lg bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center font-bold text-white">Banana</div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-zinc-50 dark:bg-zinc-900/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">ทำไมต้อง Kindee Vocab?</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">ครบเครื่องเรื่องคำศัพท์อังกฤษ เรียนรู้ได้อย่างมีประสิทธิภาพ</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <FeatureCard 
+              icon={<Brain className="h-6 w-6 text-amber-500" />}
+              title="สร้างคลังศัพท์ส่วนตัว"
+              description="เพิ่มคำศัพท์และความหมายที่คุณต้องการจำเองได้ รองรับการปรับแต่งที่ยืดหยุ่น"
+            />
+            <FeatureCard 
+              icon={<Gamepad2 className="h-6 w-6 text-violet-500" />}
+              title="Mini-games สุดสนุก"
+              description="ลืมการท่องจำแบบเดิมๆ ไปได้เลย ทบทวนความจำผ่านเกมหลากหลายรูปแบบ"
+            />
+            <FeatureCard 
+              icon={<Trophy className="h-6 w-6 text-emerald-500" />}
+              title="ติดตามสถิติ"
+              description="เห็นพัฒนาการของคุณได้ชัดเจนผ่านกราฟและคะแนนความแม่นยำในแต่ละวัน"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Games Preview */}
+      <section className="py-24 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
+            <div className="max-w-xl text-left">
+              <h2 className="text-4xl font-bold mb-4 tracking-tight">เรียนผ่านการเล่น</h2>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                เราออกแบบมินิเกมมาเพื่อทดสอบความจำโดยเฉพาะ ช่วยให้สมองจำศัพท์ได้ไวขึ้น
+              </p>
+            </div>
+            <Link href="/games">
+              <Button variant="link" className="text-amber-500 p-0 text-lg group">
+                ดูเกมทั้งหมด <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+             <GamePreviewCard 
+               title="Time Attack"
+               description="แข่งกับเวลาเพื่อจับคู่คำศัพท์กับความหมาย! ยิ่งตอบไว ยิ่งคะแนนสูง"
+               color="amber"
+               image="/assets/logos/logo.png"
+               buttonText="เริ่มเล่น"
+             />
+             <GamePreviewCard 
+               title="Battle Mode"
+               description="สู้กับมอนสเตอร์ด้วยพลังศัพท์อังกฤษ ตอบถูกเพื่อโจมตี ตอบผิดระวังโดนตีสวน!"
+               color="violet"
+               image="/assets/logos/logo.png"
+               buttonText="เริ่มสู้"
+             />
+          </div>
+        </div>
+      </section>
+
+      {/* Support Section */}
+      <section className="py-20">
+         <div className="mx-auto max-w-4xl px-4 text-center">
+            <div className="p-8 md:p-12 rounded-3xl bg-zinc-900 border border-zinc-800 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Heart className="h-32 w-32 fill-rose-500" />
+               </div>
+               <h2 className="text-3xl font-bold text-white mb-4">สนับสนุน Kindee Vocab</h2>
+               <p className="text-zinc-400 mb-8 max-w-lg mx-auto text-lg leading-relaxed">
+                  ร่วมเป็นส่วนหนึ่งในการสนับสนุนค่า Server และพัฒนาฟีเจอร์ใหม่ๆ 
+                  เพื่อให้ทุกคนได้เข้าถึงการเรียนรู้ที่สนุกสนาน
+               </p>
+               <Link href="/donate">
+                  <Button size="lg" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-none gap-2 px-8">
+                     <Heart className="h-5 w-5 fill-white" /> Support Kindee
+                  </Button>
+               </Link>
+            </div>
+         </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-2">
+               <img src="/assets/logos/logo.png" alt="Logo" className="h-6 w-6 object-contain grayscale opacity-50" />
+               <span className="text-zinc-500 font-semibold uppercase tracking-widest text-xs">Kindee Vocab &copy; 2026</span>
+            </div>
+            <div className="flex gap-8 text-sm text-zinc-500">
+               <Link href="/games" className="hover:text-amber-500 underline-offset-4 hover:underline">มินิเกม</Link>
+               <Link href="/verb3" className="hover:text-amber-500 underline-offset-4 hover:underline">กริยา 3 ช่อง</Link>
+               <Link href="/donate" className="hover:text-rose-500 underline-offset-4 hover:underline">สนับสนุน</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Add animation styles */}
+      <style jsx global>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        @keyframes pulse-slow {
+          0% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 0.8; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out forwards;
+        }
+        .animate-float {
+          animation: float 4s ease-in-out infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <Card className="bg-white dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-800/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <CardHeader>
+        <div className="mb-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 w-fit">
+          {icon}
+        </div>
+        <CardTitle className="text-xl">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed ThaiFont">{description}</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function GamePreviewCard({ title, description, color, image, buttonText }: { title: string, description: string, color: string, image: string, buttonText: string }) {
+  const colorClasses = {
+    amber: "from-amber-500/10 to-transparent border-amber-500/20",
+    violet: "from-violet-500/10 to-transparent border-violet-500/20",
+    emerald: "from-emerald-500/10 to-transparent border-emerald-500/20",
+  }[color] || "from-amber-500/10 to-transparent border-amber-500/20"
+
+  const iconColor = {
+    amber: "text-amber-500",
+    violet: "text-violet-500",
+    emerald: "text-emerald-500",
+  }[color] || "text-amber-500"
+
+  return (
+    <div className={`p-8 rounded-3xl border ${colorClasses} bg-gradient-to-br flex flex-col md:flex-row gap-8 items-center group`}>
+       <div className="flex-1 space-y-4">
+          <h3 className="text-2xl font-bold">{title}</h3>
+          <p className="text-zinc-500 dark:text-zinc-400 ThaiFont">{description}</p>
+          <Button variant="outline" className={`rounded-full gap-2 border-zinc-200 dark:border-zinc-800 ${iconColor} bg-white dark:bg-black font-semibold`}>
+             {buttonText} <Zap className="h-4 w-4" />
+          </Button>
+       </div>
+       <div className="w-32 h-32 md:w-48 md:h-48 relative shrink-0">
+          <div className="absolute inset-0 bg-white/50 dark:bg-amber-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+          <img src={image} alt={title} className="relative z-10 w-full h-full object-contain drop-shadow-2xl group-hover:rotate-12 transition-transform duration-500" />
+       </div>
     </div>
   )
 }

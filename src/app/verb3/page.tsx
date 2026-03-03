@@ -89,7 +89,7 @@ export default function Verb3Page() {
         <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
+              <Link href="/dashboard">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
@@ -129,7 +129,7 @@ export default function Verb3Page() {
             <h3 className="text-xl font-bold">No verbs found</h3>
             <p className="text-muted-foreground">Add some verbs in the dashboard first!</p>
             <Button className="mt-6" asChild>
-              <Link href="/">Go to Dashboard</Link>
+              <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
         ) : (
