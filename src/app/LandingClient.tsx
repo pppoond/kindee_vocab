@@ -13,13 +13,16 @@ import {
   Trophy, 
   Zap,
   LayoutDashboard,
-  ArrowRight
+  ArrowRight,
+  Menu,
+  X
 } from "lucide-react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function LandingClient() {
   const [user, setUser] = useState<any>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -51,26 +54,100 @@ export function LandingClient() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            {user ? (
-              <Link href="/dashboard">
-                <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">
-                  Go to Dashboard <LayoutDashboard className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link href="/login">
-                  <Button variant="ghost" className="rounded-full hover:bg-amber-500/10">Sign In</Button>
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
+            
+            <div className="hidden md:flex items-center gap-4">
+              {user ? (
+                <Link href="/dashboard">
+                  <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">
+                    Go to Dashboard <LayoutDashboard className="ml-2 h-4 w-4" />
+                  </Button>
                 </Link>
-                <Link href="/login?tab=signup">
-                  <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">Get Started</Button>
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link href="/login">
+                    <Button variant="ghost" className="rounded-full hover:bg-amber-500/10">Sign In</Button>
+                  </Link>
+                  <Link href="/login?tab=signup">
+                    <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">Get Started</Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMenuOpen && (
+          <div className="md:hidden absolute top-16 left-0 w-full bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 animate-in slide-in-from-top duration-300">
+            <div className="flex flex-col p-6 gap-4">
+              <Link 
+                href="#features" 
+                className="text-lg font-medium hover:text-amber-500 py-2 border-b border-zinc-100 dark:border-zinc-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ฟีเจอร์
+              </Link>
+              <Link 
+                href="/games" 
+                className="text-lg font-medium hover:text-amber-500 py-2 border-b border-zinc-100 dark:border-zinc-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Games
+              </Link>
+              <Link 
+                href="/verb3" 
+                className="text-lg font-medium hover:text-amber-500 py-2 border-b border-zinc-100 dark:border-zinc-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                กริยา 3 ช่อง
+              </Link>
+              <Link 
+                href="/donate" 
+                className="text-lg font-medium hover:text-rose-500 py-2 flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart className="h-5 w-5 fill-rose-500 text-rose-500" /> สนับสนุนทีมงาน
+              </Link>
+              
+              <div className="pt-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between pb-2">
+                  <span className="text-sm text-zinc-500">Theme</span>
+                  <ThemeToggle />
+                </div>
+                {user ? (
+                  <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 h-12">
+                      Dashboard <LayoutDashboard className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full rounded-xl h-12">Sign In</Button>
+                    </Link>
+                    <Link href="/login?tab=signup" onClick={() => setIsMenuOpen(false)}>
+                      <Button className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 h-12">Get Started</Button>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
