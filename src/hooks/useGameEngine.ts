@@ -41,6 +41,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const correctCountRef = useRef(0)
   const wrongCountRef = useRef(0)
   const timeLeftRef = useRef(15)
+  const wrongAnswersRef = useRef<string[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const isSavedRef = useRef(false)
   const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, wrongWords: [] as any[], result: "lost" as "won" | "lost" | "finished" })
@@ -76,7 +77,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     if (!user) return
 
     console.log("Saving session (Batched):", { result, finalLevel, correct, wrong, wrongWords })
-    await supabase.from("game_sessions").insert([{
+    const { error } = await supabase.from("game_sessions").insert([{
       user_id: user.id,
       mode,
       level: finalLevel,
@@ -85,6 +86,11 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
       wrong_count: wrong,
       wrong_words: wrongWords,
     }])
+
+    if (error) {
+      console.error("Error saving session:", error)
+      if (onAlert) onAlert("Failed to save session statistics.")
+    }
   }, [supabase, mode])
 
   const loadGame = useCallback(async () => {
@@ -171,7 +177,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
             level, 
             correct: correctCountRef.current, 
             wrong: wrongCountRef.current, 
-            wrongWords: Array.from(new Set(wrongAnswers.map(w => w.word))),
+            wrongWords: Array.from(new Set(wrongAnswersRef.current)),
             result: "won" 
           }
 
@@ -190,6 +196,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
+      wrongAnswersRef.current.push(currentWord!.word)
       setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
       setFeedback({ type: "error", message: `Wrong! The correct meaning was: ${currentWord?.meaning}` })
       
@@ -204,7 +211,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("lose")
           setDemonState("win")
           
-          const finalWrongWords = Array.from(new Set([...wrongAnswers, { word: currentWord!.word, meaning: currentWord!.meaning }].map(w => w.word)))
+          const finalWrongWords = Array.from(new Set(wrongAnswersRef.current))
           sessionDataRef.current = { 
             level, 
             correct: correctCountRef.current, 
@@ -282,6 +289,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setMaxTime(15)
     timeLeftRef.current = 15
     isSavedRef.current = false
+    wrongAnswersRef.current = []
     sessionDataRef.current = { level: 1, correct: 0, wrong: 0, wrongWords: [], result: "lost" }
     loadGame()
   }, [loadGame])

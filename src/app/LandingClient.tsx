@@ -277,21 +277,21 @@ export function LandingClient() {
                title="Time Attack"
                description="แข่งกับเวลาเพื่อจับคู่ศัพท์ให้ทัน! ยิ่งไว ยิ่งจึ้ง คะแนนพุ่งแน่นอน"
                color="amber"
-               image="/assets/logos/logo.png"
+               image="/assets/pages/home/soldier.png"
                buttonText="ลุยเลย"
              />
              <GamePreviewCard 
                title="Battle Mode"
                description="ไฟว้กับมอนสเตอร์ด้วยคลังศัพท์ในหัว ตอบถูกเพื่อโจมตี ตอบผิดระวังโดนดาเมจนะ!"
                color="violet"
-               image="/assets/logos/logo.png"
+               image="/assets/pages/home/mini_boss.png"
                buttonText="ไปไฟว้กัน"
              />
              <GamePreviewCard 
                title="Vocab Writing"
                description="ท้าทายการสะกดคำแบบตัวมัม! เขียนศัพท์ตามความหมายให้เป๊ะ อัปเวลการสะกดคำแบบฉ่ำๆ"
                color="emerald"
-               image="/assets/logos/logo.png"
+               image="/assets/pages/home/mage_writing.png"
                buttonText="เริ่มเขียนเลย"
              />
           </div>

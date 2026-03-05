@@ -37,6 +37,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const gameStateRef = useRef<FlashcardMode>("selecting")
   const isSavedRef = useRef(false)
+  const wrongAnswersRef = useRef<string[]>([])
 
   const supabase = createClient()
   const router = useRouter()
@@ -88,7 +89,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    await supabase.from("game_sessions").insert([{
+    const { error } = await supabase.from("game_sessions").insert([{
       user_id: user.id,
       mode: "flashcard",
       level: 1,
@@ -97,6 +98,11 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
       wrong_count: wrong,
       wrong_words: wrongWords,
     }])
+
+    if (error) {
+      console.error("Error saving session:", error)
+      if (onAlert) onAlert("Failed to save session statistics.")
+    }
   }, [supabase])
 
   const startGame = useCallback((mode: FlashcardSubMode, duration?: number) => {
@@ -129,7 +135,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
           if (timerRef.current) clearInterval(timerRef.current)
           setGameState("finished")
           gameStateRef.current = "finished"
-          saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
+          saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswersRef.current)))
         }
       }, 1000)
     }
@@ -148,6 +154,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
       // Don't remember
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
+      wrongAnswersRef.current.push(currentWord.word)
       setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
     }
 
@@ -162,7 +169,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
         if (newQueue.length === 0 && subMode === "normal") {
           setGameState("finished")
           gameStateRef.current = "finished"
-          saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
+          saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswersRef.current)))
           setCurrentWord(null)
         } else if (newQueue.length === 0 && subMode === "timed") {
           // Reshuffle for timed mode (loop)
@@ -185,8 +192,8 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
-      if (!isSavedRef.current && correctCountRef.current > 0) {
-        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
+      if (!isSavedRef.current && (correctCountRef.current > 0 || wrongCountRef.current > 0)) {
+        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswersRef.current)))
       }
     }
   }, [saveSession])
@@ -204,6 +211,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
     setCurrentWord(null)
     setQueue([])
     setWrongAnswers([])
+    wrongAnswersRef.current = []
     isSavedRef.current = false
   }, [])
 

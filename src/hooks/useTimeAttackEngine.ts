@@ -30,6 +30,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
 
   const correctCountRef = useRef(0)
   const wrongCountRef = useRef(0)
+  const wrongAnswersRef = useRef<string[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const gameStateRef = useRef<TimeAttackState>("selecting")
   const isSavedRef = useRef(false)
@@ -59,7 +60,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    await supabase.from("game_sessions").insert([{
+    const { error } = await supabase.from("game_sessions").insert([{
       user_id: user.id,
       mode: "timeattack",
       level: 1,
@@ -68,6 +69,11 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
       wrong_count: wrong,
       wrong_words: wrongWords,
     }])
+
+    if (error) {
+      console.error("Error saving session:", error)
+      if (onAlert) onAlert("Failed to save session statistics.")
+    }
   }, [supabase])
 
   const loadGame = useCallback(async () => {
@@ -104,6 +110,8 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     setGameState("playing")
     gameStateRef.current = "playing"
     setFeedback(null)
+    setWrongAnswers([])
+    wrongAnswersRef.current = []
 
     if (vocabularies.length > 0) {
       setupTurn(vocabularies)
@@ -119,7 +127,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
         if (timerRef.current) clearInterval(timerRef.current)
         setGameState("finished")
         gameStateRef.current = "finished"
-        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
+        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswersRef.current)))
       }
     }, 1000)
   }, [vocabularies, setupTurn, saveSession])
@@ -134,8 +142,9 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
+      wrongAnswersRef.current.push(currentWord.word)
       setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
-      setFeedback({ type: "error", message: `Wrong! → ${currentWord?.meaning}` })
+      setFeedback({ type: "error", message: `Wrong! → ${currentWord?.word}` })
     }
 
     setTimeout(() => {
@@ -149,8 +158,8 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
-      if (!isSavedRef.current && correctCountRef.current > 0) {
-        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
+      if (!isSavedRef.current && (correctCountRef.current > 0 || wrongCountRef.current > 0)) {
+        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswersRef.current)))
       }
     }
   }, [saveSession])
@@ -167,6 +176,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     setCurrentWord(null)
     setOptions([])
     setWrongAnswers([])
+    wrongAnswersRef.current = []
     isSavedRef.current = false
   }, [])
 
