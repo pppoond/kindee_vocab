@@ -17,15 +17,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kindee Vocab — แอปท่องคำศัพท์ภาษาอังกฤษ",
+    default: "Kindee Vocab — อัปสกิลศัพท์อังกฤษให้จึ้ง",
     template: "%s | Kindee Vocab",
   },
-  description: "แอปเรียนคำศัพท์ภาษาอังกฤษสุดสนุก เพิ่มคำศัพท์ ทบทวนผ่านมินิเกม Battle, Time Attack, Flashcard และอื่นๆ ช่วยให้จำคำศัพท์ได้เร็วขึ้น",
-  keywords: ["คำศัพท์ภาษาอังกฤษ", "เรียนภาษาอังกฤษ", "แอปท่องศัพท์", "vocabulary", "flashcard", "เกมคำศัพท์", "Kindee Vocab"],
+  description: "แอปเรียนศัพท์อังกฤษแบบจอยๆ อัปสกิลได้แบบ No Cap ผ่านมินิเกมสุดจึ่ง Battle, Time Attack, Flashcard และอื่นๆ ช่วยให้จำแม่นแบบตะโกน",
+  keywords: ["คำศัพท์ภาษาอังกฤษ", "อัปสกิลภาษาอังกฤษ", "แอปท่องศัพท์", "vocabulary", "flashcard", "เกมคำศัพท์", "Kindee Vocab"],
   authors: [{ name: "Kindee Vocab" }],
   openGraph: {
-    title: "Kindee Vocab — แอปท่องคำศัพท์ภาษาอังกฤษ",
-    description: "เรียนคำศัพท์ภาษาอังกฤษสุดสนุกผ่านมินิเกมหลากหลายโหมด เพิ่มคำศัพท์ ติดตามความก้าวหน้า และทบทวนคำศัพท์ได้ทุกที่ทุกเวลา",
+    title: "Kindee Vocab — อัปสกิลศัพท์อังกฤษให้จึ้ง",
+    description: "อัปสกิลศัพท์ภาษาอังกฤษให้นัวผ่านมินิเกมหลากหลายโหมด เพิ่มคำศัพท์ ติดตามความก้าวหน้า และทบทวนได้ทุกที่ทุกเวลาแบบใจฟู",
     type: "website",
     locale: "th_TH",
     siteName: "Kindee Vocab",
