@@ -61,7 +61,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   const loadGame = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      setLoading(false)
       return
     }
 

@@ -96,7 +96,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const loadGame = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      router.push("/login")
+      // Don't redirect here, let middleware handle it or wait for session sync
+      setLoading(false)
       return
     }
 
