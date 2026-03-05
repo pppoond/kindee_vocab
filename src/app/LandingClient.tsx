@@ -120,7 +120,7 @@ export function LandingClient() {
                 className="text-lg font-medium hover:text-rose-500 py-2 flex items-center gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Heart className="h-5 w-5 fill-rose-500 text-rose-500" /> สนับสนุนทีมงาน
+                <Heart className="h-5 w-5 fill-rose-500 text-rose-500" /> ซัพพอร์ตทีมงาน
               </Link>
               
               <div className="pt-4 flex flex-col gap-3">
@@ -159,17 +159,17 @@ export function LandingClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-sm font-medium mb-6 animate-fade-in">
             <Sparkles className="h-4 w-4" />
-            <span>เก่งศัพท์อังกฤษได้ไวขึ้น สนุกเหมือนเล่นเกม</span>
+            <span>อัปสกิลศัพท์อังกฤษให้จึ้ง สนุกจอยๆ แบบ No Cap</span>
           </div>
           
           <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 bg-clip-text text-transparent leading-[1.15]">
             Level Up Your <br className="hidden md:block" />
-            <span className="text-amber-500">Vocabulary Master</span>
+            <span className="text-amber-500">Vocab Game</span>
           </h1>
           
           <p className="max-w-2xl mx-auto text-lg text-zinc-600 dark:text-zinc-400 mb-10 leading-relaxed ThaiFont">
-            Kindee Vocab ช่วยให้คุณจำศัพท์ได้นานขึ้นผ่านมินิเกมสุดมันส์ 
-            แฟลชการ์ดอัจฉริยะ และระบบติดตามความก้าวหน้าส่วนตัว
+            Kindee Vocab ช่วยให้จำศัพท์แม่นแบบไม่ต้องพยายาม 
+            ใจฟูไปกับมินิเกมสุดจอย แฟลชการ์ดอัจฉริยะ และสถิติที่เห็นแล้วต้องร้องว้าว
           </p>
 
           {/* Epic Battle Scene */}
@@ -231,25 +231,25 @@ export function LandingClient() {
       <section id="features" className="py-24 bg-zinc-50 dark:bg-zinc-900/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">ทำไมต้อง Kindee Vocab?</h2>
-            <p className="text-zinc-600 dark:text-zinc-400">ครบเครื่องเรื่องคำศัพท์อังกฤษ เรียนรู้ได้อย่างมีประสิทธิภาพ</p>
+            <h2 className="text-3xl font-bold mb-4">Vibe ของ Kindee Vocab ที่คุณต้องเลิฟ</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">ครบเครื่องเรื่องภาษาอังกฤษ อัปสกิลได้แบบฉ่ำๆ</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard 
               icon={<Brain className="h-6 w-6 text-amber-500" />}
-              title="สร้างคลังศัพท์ส่วนตัว"
-              description="เพิ่มคำศัพท์และความหมายที่คุณต้องการจำเองได้ รองรับการปรับแต่งที่ยืดหยุ่น"
+              title="คลังศัพท์ส่วนตัวแบบสับ"
+              description="เพิ่มศัพท์ที่ใช่สำหรับคุณเองได้เลย รองรับการปรับแต่งแบบตะโกน"
             />
             <FeatureCard 
               icon={<Gamepad2 className="h-6 w-6 text-violet-500" />}
-              title="Mini-games สุดสนุก"
-              description="ลืมการท่องจำแบบเดิมๆ ไปได้เลย ทบทวนความจำผ่านเกมหลากหลายรูปแบบ"
+              title="Mini-games สุดจอย"
+              description="มูฟออนจากการท่องจำแบบเดิมๆ ทบทวนศัพท์ผ่านเกมหลากหลายสไตล์"
             />
             <FeatureCard 
               icon={<Trophy className="h-6 w-6 text-emerald-500" />}
-              title="ติดตามสถิติ"
-              description="เห็นพัฒนาการของคุณได้ชัดเจนผ่านกราฟและคะแนนความแม่นยำในแต่ละวัน"
+              title="สถิติสุดเป๊ะ"
+              description="เห็นพัฒนาการแบบ Real-time ผ่านรีพอร์ตที่ช่วยให้คุณเก่งขึ้นทุกวัน"
             />
           </div>
         </div>
@@ -260,32 +260,39 @@ export function LandingClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
             <div className="max-w-xl text-left">
-              <h2 className="text-4xl font-bold mb-4 tracking-tight">เรียนผ่านการเล่น</h2>
+              <h2 className="text-4xl font-bold mb-4 tracking-tight">เรียนผ่านการเล่นที่แท้ทรู</h2>
               <p className="text-zinc-600 dark:text-zinc-400">
-                เราออกแบบมินิเกมมาเพื่อทดสอบความจำโดยเฉพาะ ช่วยให้สมองจำศัพท์ได้ไวขึ้น
+                มินิเกมที่ออกแบบมาให้สมองจำศัพท์ได้ไวขึ้นแบบไม่ต้องพยายาม สนุกจนหยุดไม่อยู่
               </p>
             </div>
-            <Link href="/games">
-              <Button variant="link" className="text-amber-500 p-0 text-lg group">
-                ดูเกมทั้งหมด <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
+              <Link href="/games">
+                <Button variant="link" className="text-amber-500 p-0 text-lg group">
+                  ส่องเกมทั้งหมด <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
              <GamePreviewCard 
                title="Time Attack"
-               description="แข่งกับเวลาเพื่อจับคู่คำศัพท์กับความหมาย! ยิ่งตอบไว ยิ่งคะแนนสูง"
+               description="แข่งกับเวลาเพื่อจับคู่ศัพท์ให้ทัน! ยิ่งไว ยิ่งจึ้ง คะแนนพุ่งแน่นอน"
                color="amber"
                image="/assets/logos/logo.png"
-               buttonText="เริ่มเล่น"
+               buttonText="ลุยเลย"
              />
              <GamePreviewCard 
                title="Battle Mode"
-               description="สู้กับมอนสเตอร์ด้วยพลังศัพท์อังกฤษ ตอบถูกเพื่อโจมตี ตอบผิดระวังโดนตีสวน!"
+               description="ไฟว้กับมอนสเตอร์ด้วยคลังศัพท์ในหัว ตอบถูกเพื่อโจมตี ตอบผิดระวังโดนดาเมจนะ!"
                color="violet"
                image="/assets/logos/logo.png"
-               buttonText="เริ่มสู้"
+               buttonText="ไปไฟว้กัน"
+             />
+             <GamePreviewCard 
+               title="Vocab Writing"
+               description="ท้าทายการสะกดคำแบบตัวมัม! เขียนศัพท์ตามความหมายให้เป๊ะ อัปเวลการสะกดคำแบบฉ่ำๆ"
+               color="emerald"
+               image="/assets/logos/logo.png"
+               buttonText="เริ่มเขียนเลย"
              />
           </div>
         </div>
@@ -298,10 +305,10 @@ export function LandingClient() {
                <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Heart className="h-32 w-32 fill-rose-500" />
                </div>
-               <h2 className="text-3xl font-bold text-white mb-4">สนับสนุน Kindee Vocab</h2>
+               <h2 className="text-3xl font-bold text-white mb-4">ซัพพอร์ต Kindee Vocab</h2>
                <p className="text-zinc-400 mb-8 max-w-lg mx-auto text-lg leading-relaxed">
-                  ร่วมเป็นส่วนหนึ่งในการสนับสนุนค่า Server และพัฒนาฟีเจอร์ใหม่ๆ 
-                  เพื่อให้ทุกคนได้เข้าถึงการเรียนรู้ที่สนุกสนาน
+                 ร่วมเป็นส่วนหนึ่งในการซัพพอร์ตค่า Server และพัฒนาฟีเจอร์ใหม่ๆ 
+                 เพื่อให้ทุกคนได้อัปสกิลภาษาอังกฤษแบบสนุกจอยๆ ไปด้วยกัน
                </p>
                <Link href="/donate">
                   <Button size="lg" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-none gap-2 px-8">
@@ -321,9 +328,9 @@ export function LandingClient() {
                <span className="text-zinc-500 font-semibold uppercase tracking-widest text-xs">Kindee Vocab &copy; 2026</span>
             </div>
             <div className="flex gap-8 text-sm text-zinc-500">
-               <Link href="/games" className="hover:text-amber-500 underline-offset-4 hover:underline">มินิเกม</Link>
+               <Link href="/games" className="hover:text-amber-500 underline-offset-4 hover:underline">มินิเกมสุดจอย</Link>
                <Link href="/verb3" className="hover:text-amber-500 underline-offset-4 hover:underline">กริยา 3 ช่อง</Link>
-               <Link href="/donate" className="hover:text-rose-500 underline-offset-4 hover:underline">สนับสนุน</Link>
+               <Link href="/donate" className="hover:text-rose-500 underline-offset-4 hover:underline">ซัพพอร์ตเรา</Link>
             </div>
           </div>
         </div>

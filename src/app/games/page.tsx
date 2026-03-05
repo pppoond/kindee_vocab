@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers } from "lucide-react"
+import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers, Pencil } from "lucide-react"
 import Link from "next/link"
 import { AdBanner } from "@/components/ad-banner"
 
@@ -62,6 +62,17 @@ const GAME_MODES = [
     iconColor: "text-amber-400",
     badge: "VERB",
     badgeColor: "border-amber-500/50 text-amber-400",
+  },
+  {
+    title: "Vocab Writing",
+    description: "ท้าทายการสะกดคำ! เขียนคำศัพท์ภาษาอังกฤษจากความหมายที่ปรากฏ",
+    href: "/games/vocab-writing",
+    icon: Pencil,
+    color: "from-emerald-500/20 to-teal-500/20",
+    borderColor: "border-emerald-500/30 hover:border-emerald-500/60",
+    iconColor: "text-emerald-400",
+    badge: "WRITE",
+    badgeColor: "border-emerald-500/50 text-emerald-400",
   },
 ]
 

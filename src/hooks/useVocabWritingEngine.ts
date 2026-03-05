@@ -11,44 +11,35 @@ export type Vocabulary = {
   type: string
 }
 
-export type TimeAttackState = "selecting" | "playing" | "finished"
+export type VocabWritingState = "selecting" | "playing" | "finished"
 
 export const TIME_OPTIONS = [30, 60, 90, 120] // seconds
 
-export function useTimeAttackEngine(onAlert?: (message: string) => void) {
+export function useVocabWritingEngine(onAlert?: (message: string) => void) {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
   const [currentWord, setCurrentWord] = useState<Vocabulary | null>(null)
-  const [options, setOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [gameState, setGameState] = useState<TimeAttackState>("selecting")
+  const [gameState, setGameState] = useState<VocabWritingState>("selecting")
   const [feedback, setFeedback] = useState<{ type: "success" | "error", message: string } | null>(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
-  const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string }[]>([])
+  const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string, userTyped: string }[]>([])
   const [timeLeft, setTimeLeft] = useState(60)
   const [totalTime, setTotalTime] = useState(60)
 
   const correctCountRef = useRef(0)
   const wrongCountRef = useRef(0)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const gameStateRef = useRef<TimeAttackState>("selecting")
+  const gameStateRef = useRef<VocabWritingState>("selecting")
   const isSavedRef = useRef(false)
 
   const supabase = createClient()
   const router = useRouter()
 
   const setupTurn = useCallback((list: Vocabulary[]) => {
+    if (list.length === 0) return
     const word = list[Math.floor(Math.random() * list.length)]
     setCurrentWord(word)
-
-    const others = list
-      .filter(v => v.id !== word.id && v.word.toLowerCase() !== word.word.toLowerCase() && v.meaning !== word.meaning)
-      .map(v => v.meaning)
-
-    const uniqueOthers = Array.from(new Set(others))
-    const shuffledOthers = uniqueOthers.sort(() => 0.5 - Math.random()).slice(0, 3)
-    const finalOptions = [...shuffledOthers, word.meaning].sort(() => 0.5 - Math.random())
-    setOptions(finalOptions)
     setFeedback(null)
   }, [])
 
@@ -61,7 +52,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
 
     await supabase.from("game_sessions").insert([{
       user_id: user.id,
-      mode: "timeattack",
+      mode: "vocab_writing",
       level: 1,
       result: "finished",
       correct_count: correct,
@@ -92,7 +83,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
 
     setVocabularies(data)
     setLoading(false)
-  }, [supabase, router])
+  }, [supabase, router, onAlert])
 
   const startGame = useCallback((duration: number) => {
     setTotalTime(duration)
@@ -104,6 +95,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     setGameState("playing")
     gameStateRef.current = "playing"
     setFeedback(null)
+    setWrongAnswers([])
 
     if (vocabularies.length > 0) {
       setupTurn(vocabularies)
@@ -124,25 +116,32 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     }, 1000)
   }, [vocabularies, setupTurn, saveSession])
 
-  const handleAnswer = useCallback((answer: string) => {
+  const handleAnswer = useCallback((typedWord: string) => {
     if (gameStateRef.current !== "playing" || feedback || !currentWord) return
 
-    if (answer === currentWord?.meaning) {
+    const normalizedTyped = typedWord.trim().toLowerCase()
+    const normalizedTarget = currentWord.word.trim().toLowerCase()
+
+    if (normalizedTyped === normalizedTarget) {
       correctCountRef.current += 1
       setCorrectCount(correctCountRef.current)
       setFeedback({ type: "success", message: "Correct! ✅" })
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
-      setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
-      setFeedback({ type: "error", message: `Wrong! → ${currentWord?.meaning}` })
+      setWrongAnswers(prev => [...prev, { 
+        word: currentWord.word, 
+        meaning: currentWord.meaning,
+        userTyped: typedWord 
+      }])
+      setFeedback({ type: "error", message: `Wrong! → ${currentWord.word}` })
     }
 
     setTimeout(() => {
       if (gameStateRef.current === "playing") {
         setupTurn(vocabularies)
       }
-    }, 600)
+    }, 1000)
   }, [feedback, currentWord, vocabularies, setupTurn])
 
   // Cleanup/Save on exit
@@ -165,16 +164,12 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     wrongCountRef.current = 0
     setFeedback(null)
     setCurrentWord(null)
-    setOptions([])
     setWrongAnswers([])
     isSavedRef.current = false
   }, [])
 
-  // Cleanup timer moved to session save effect
-
   return {
     currentWord,
-    options,
     loading,
     gameState,
     feedback,

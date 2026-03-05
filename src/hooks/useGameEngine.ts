@@ -43,7 +43,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const timeLeftRef = useRef(15)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const isSavedRef = useRef(false)
-  const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, result: "lost" as "won" | "lost" | "finished" })
+  const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, wrongWords: [] as any[], result: "lost" as "won" | "lost" | "finished" })
 
   const supabase = createClient()
   const router = useRouter()
@@ -68,14 +68,14 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     timeLeftRef.current = calculatedMaxTime
   }, [])
 
-  const saveSession = useCallback(async (result: "won" | "lost" | "finished", finalLevel: number, correct: number, wrong: number) => {
+  const saveSession = useCallback(async (result: "won" | "lost" | "finished", finalLevel: number, correct: number, wrong: number, wrongWords: any[] = []) => {
     if (isSavedRef.current) return
     isSavedRef.current = true
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    console.log("Saving session (Batched):", { result, finalLevel, correct, wrong })
+    console.log("Saving session (Batched):", { result, finalLevel, correct, wrong, wrongWords })
     await supabase.from("game_sessions").insert([{
       user_id: user.id,
       mode,
@@ -83,6 +83,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
       result,
       correct_count: correct,
       wrong_count: wrong,
+      wrong_words: wrongWords,
     }])
   }, [supabase, mode])
 
@@ -170,6 +171,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
             level, 
             correct: correctCountRef.current, 
             wrong: wrongCountRef.current, 
+            wrongWords: Array.from(new Set(wrongAnswers.map(w => w.word))),
             result: "won" 
           }
 
@@ -202,13 +204,15 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("lose")
           setDemonState("win")
           
+          const finalWrongWords = Array.from(new Set([...wrongAnswers, { word: currentWord!.word, meaning: currentWord!.meaning }].map(w => w.word)))
           sessionDataRef.current = { 
             level, 
             correct: correctCountRef.current, 
             wrong: wrongCountRef.current, 
+            wrongWords: finalWrongWords,
             result: "lost" 
           }
-          saveSession("lost", level, correctCountRef.current, wrongCountRef.current)
+          saveSession("lost", level, correctCountRef.current, wrongCountRef.current, finalWrongWords)
         } else {
           setHeroState("hurt")
           setTimeout(() => {
@@ -251,8 +255,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
       if (!isSavedRef.current && correctCountRef.current > 0) {
         // We use a small hack for cleanup save: using a sync check but the save itself is async.
         // For Supabase, we can't easily wait for unmount, but this triggers the request.
-        const { result, level: finalLevel, correct, wrong } = sessionDataRef.current
-        saveSession(result, finalLevel, correct, wrong)
+        const { result, level: finalLevel, correct, wrong, wrongWords } = sessionDataRef.current
+        saveSession(result, finalLevel, correct, wrong, wrongWords)
       }
     }
   }, [saveSession])
@@ -278,7 +282,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setMaxTime(15)
     timeLeftRef.current = 15
     isSavedRef.current = false
-    sessionDataRef.current = { level: 1, correct: 0, wrong: 0, result: "lost" }
+    sessionDataRef.current = { level: 1, correct: 0, wrong: 0, wrongWords: [], result: "lost" }
     loadGame()
   }, [loadGame])
 

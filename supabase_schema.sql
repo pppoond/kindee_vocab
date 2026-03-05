@@ -41,6 +41,7 @@ CREATE TABLE game_sessions (
   result TEXT NOT NULL,
   correct_count INTEGER NOT NULL DEFAULT 0,
   wrong_count INTEGER NOT NULL DEFAULT 0,
+  wrong_words JSONB DEFAULT '[]',
   played_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
