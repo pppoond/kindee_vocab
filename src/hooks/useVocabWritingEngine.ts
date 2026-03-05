@@ -43,7 +43,7 @@ export function useVocabWritingEngine(onAlert?: (message: string) => void) {
     setFeedback(null)
   }, [])
 
-  const saveSession = useCallback(async (correct: number, wrong: number) => {
+  const saveSession = useCallback(async (correct: number, wrong: number, wrongWords: string[] = []) => {
     if (isSavedRef.current) return
     isSavedRef.current = true
 
@@ -57,6 +57,7 @@ export function useVocabWritingEngine(onAlert?: (message: string) => void) {
       result: "finished",
       correct_count: correct,
       wrong_count: wrong,
+      wrong_words: wrongWords,
     }])
   }, [supabase])
 
@@ -110,7 +111,7 @@ export function useVocabWritingEngine(onAlert?: (message: string) => void) {
         if (timerRef.current) clearInterval(timerRef.current)
         setGameState("finished")
         gameStateRef.current = "finished"
-        saveSession(correctCountRef.current, wrongCountRef.current)
+        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
       }
     }, 1000)
   }, [vocabularies, setupTurn, saveSession])
@@ -148,7 +149,7 @@ export function useVocabWritingEngine(onAlert?: (message: string) => void) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
       if (!isSavedRef.current && correctCountRef.current > 0) {
-        saveSession(correctCountRef.current, wrongCountRef.current)
+        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
       }
     }
   }, [saveSession])

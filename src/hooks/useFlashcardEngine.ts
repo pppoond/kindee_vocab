@@ -81,7 +81,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
     setLoading(false)
   }, [supabase, router])
 
-  const saveSession = useCallback(async (correct: number, wrong: number) => {
+  const saveSession = useCallback(async (correct: number, wrong: number, wrongWords: string[] = []) => {
     if (isSavedRef.current) return
     isSavedRef.current = true
 
@@ -95,6 +95,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
       result: "finished",
       correct_count: correct,
       wrong_count: wrong,
+      wrong_words: wrongWords,
     }])
   }, [supabase])
 
@@ -128,7 +129,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
           if (timerRef.current) clearInterval(timerRef.current)
           setGameState("finished")
           gameStateRef.current = "finished"
-          saveSession(correctCountRef.current, wrongCountRef.current)
+          saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
         }
       }, 1000)
     }
@@ -161,7 +162,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
         if (newQueue.length === 0 && subMode === "normal") {
           setGameState("finished")
           gameStateRef.current = "finished"
-          saveSession(correctCountRef.current, wrongCountRef.current)
+          saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
           setCurrentWord(null)
         } else if (newQueue.length === 0 && subMode === "timed") {
           // Reshuffle for timed mode (loop)
@@ -185,7 +186,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
       if (!isSavedRef.current && correctCountRef.current > 0) {
-        saveSession(correctCountRef.current, wrongCountRef.current)
+        saveSession(correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswers.map(w => w.word))))
       }
     }
   }, [saveSession])

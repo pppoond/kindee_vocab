@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +31,12 @@ export default function VerbMasterPage() {
   const [v2Input, setV2Input] = useState("")
   const [v3Input, setV3Input] = useState("")
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null)
+  const [wrongAnswers, setWrongAnswers] = useState<string[]>([])
+  
+  const isSavedRef = useRef(false)
+  const correctCountRef = useRef(0)
+  const wrongCountRef = useRef(0)
+  const wrongAnswersRef = useRef<string[]>([])
   
   const supabase = createClient()
   const { showAlert } = useAlert()
@@ -56,6 +62,30 @@ export default function VerbMasterPage() {
     fetchVerbs()
   }, [fetchVerbs])
 
+  const saveSession = useCallback(async () => {
+    if (isSavedRef.current || correctCountRef.current === 0) return
+    isSavedRef.current = true
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    await supabase.from("game_sessions").insert([{
+      user_id: user.id,
+      mode: "verb_master",
+      level: 1,
+      result: lives <= 0 ? "lost" : "finished",
+      correct_count: correctCountRef.current,
+      wrong_count: wrongCountRef.current,
+      wrong_words: Array.from(new Set(wrongAnswersRef.current)),
+    }])
+  }, [supabase, lives])
+
+  useEffect(() => {
+    return () => {
+      saveSession()
+    }
+  }, [saveSession])
+
   useEffect(() => {
     let timer: NodeJS.Timeout
     if (gameState === "playing" && timeLeft > 0) {
@@ -69,9 +99,13 @@ export default function VerbMasterPage() {
   const handleWrong = () => {
     setFeedback("wrong")
     const newLives = lives - 1
+    wrongCountRef.current += 1
+    wrongAnswersRef.current.push(verbs[currentIndex].word)
+    setWrongAnswers(prev => [...prev, verbs[currentIndex].word])
     setLives(newLives)
     if (newLives <= 0) {
       setGameState("finished")
+      saveSession()
     } else {
       setTimeout(() => {
         setFeedback(null)
@@ -82,6 +116,7 @@ export default function VerbMasterPage() {
 
   const handleCorrect = () => {
     setFeedback("correct")
+    correctCountRef.current += 1
     setScore(prev => prev + 10)
     setTimeout(() => {
       setFeedback(null)
@@ -97,6 +132,7 @@ export default function VerbMasterPage() {
       setCurrentIndex(currentIndex + 1)
     } else {
       setGameState("finished")
+      saveSession()
     }
   }
 
@@ -125,6 +161,11 @@ export default function VerbMasterPage() {
     setCurrentIndex(0)
     setTimeLeft(15)
     setGameState("playing")
+    isSavedRef.current = false
+    correctCountRef.current = 0
+    wrongCountRef.current = 0
+    wrongAnswersRef.current = []
+    setWrongAnswers([])
   }
 
   if (loading) return <Loading className="min-h-screen" />
