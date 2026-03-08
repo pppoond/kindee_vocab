@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,8 @@ import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
 import { Loader2 } from "lucide-react"
 import { AdBanner } from "@/components/ad-banner"
+
+import { getExampleSentences } from "@/lib/dictionary"
 
 type Vocabulary = {
   id: string
@@ -72,6 +74,10 @@ export default function Dashboard() {
   const [filterType, setFilterType] = useState("all")
   const [filterMemorized, setFilterMemorized] = useState("all")
   
+  // New states for example sentences
+  const [apiExamples, setApiExamples] = useState<Record<string, string[]>>({})
+  const [exampleLoading, setExampleLoading] = useState<Record<string, boolean>>({})
+  
   const supabase = createClient()
   const router = useRouter()
   const { showAlert, showConfirm } = useAlert()
@@ -116,6 +122,18 @@ export default function Dashboard() {
       utterance.lang = 'en-US'
       utterance.rate = 0.9
       window.speechSynthesis.speak(utterance)
+    }
+  }
+
+  const fetchExamples = async (word: string) => {
+    if (apiExamples[word] || exampleLoading[word]) return
+
+    setExampleLoading(prev => ({ ...prev, [word]: true }))
+    try {
+      const sentences = await getExampleSentences(word)
+      setApiExamples(prev => ({ ...prev, [word]: sentences }))
+    } finally {
+      setExampleLoading(prev => ({ ...prev, [word]: false }))
     }
   }
 
@@ -511,9 +529,24 @@ export default function Dashboard() {
                               </span>
                             )}
                           </CardTitle>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-primary shrink-0" onClick={() => speakWord(v.word)}>
-                            <Volume2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-primary" onClick={() => speakWord(v.word)}>
+                              <Volume2 className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className={`h-7 w-7 transition-colors ${apiExamples[v.word] ? 'text-emerald-500 hover:text-emerald-600' : 'text-zinc-400 hover:text-primary'}`}
+                              onClick={() => fetchExamples(v.word)}
+                              disabled={exampleLoading[v.word]}
+                            >
+                              {exampleLoading[v.word] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Lightbulb className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                           {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
                         </div>
                         {v.type && (
@@ -552,9 +585,32 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                       <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">{v.meaning}</p>
-                      {v.example && (
-                        <p className="text-sm text-zinc-500 italic">"{v.example}"</p>
-                      )}
+                      <div className="space-y-2">
+                        {v.example && (
+                          <p className="text-sm text-zinc-500 italic">"{v.example}"</p>
+                        )}
+                        {/* API Examples Section */}
+                        {apiExamples[v.word] && (
+                          <div className="mt-2 space-y-2 animate-in slide-in-from-top-1 duration-200 border-t pt-2 dark:border-zinc-800">
+                            {apiExamples[v.word].length > 0 ? (
+                              apiExamples[v.word].slice(0, 2).map((sentence, sIdx) => (
+                                <div key={sIdx} className="group relative text-[16px] text-zinc-500 bg-zinc-100 dark:bg-white/5 p-2 rounded border-l-2 border-emerald-500/30 italic leading-relaxed pr-8">
+                                  "{sentence}"
+                                  <button
+                                    onClick={() => speakWord(sentence)}
+                                    className="absolute right-2 top-2 p-1 text-zinc-400 hover:text-primary hover:bg-primary/5 rounded transition-colors"
+                                    title="Read sentence"
+                                  >
+                                    <Volume2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-[16px] text-zinc-400 italic">No additional example sentences found.</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
