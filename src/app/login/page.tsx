@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAlert } from "@/components/alert-provider"
 import { Loader2 } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -52,7 +53,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-black relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md border-zinc-200 shadow-lg dark:border-zinc-800">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers, Pencil } from "lucide-react"
 import Link from "next/link"
 import { AdBanner } from "@/components/ad-banner"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const GAME_MODES = [
   {
@@ -78,7 +79,7 @@ const GAME_MODES = [
 
 export default function GamesPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
@@ -86,6 +87,7 @@ export default function GamesPage() {
             <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Dashboard</span>
           </Link>
         </Button>
+        <ThemeToggle />
       </div>
 
       {/* Title */}
@@ -100,16 +102,16 @@ export default function GamesPage() {
       <div className="max-w-5xl mx-auto px-4 pb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {GAME_MODES.map((mode) => (
           <Link key={mode.href} href={mode.href} className="group">
-            <Card className={`relative bg-zinc-900 ${mode.borderColor} border-2 transition-all duration-300 h-full group-hover:scale-[1.03] group-hover:shadow-2xl overflow-hidden`}>
+            <Card className={`relative bg-card ${mode.borderColor} border-2 transition-all duration-300 h-full group-hover:scale-[1.03] group-hover:shadow-2xl overflow-hidden`}>
               <div className={`absolute inset-0 bg-gradient-to-br ${mode.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
               <CardHeader className="relative text-center pb-3 pt-8">
-                <div className="mx-auto mb-4 p-4 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 w-fit group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto mb-4 p-4 rounded-2xl bg-muted/80 border border-border w-fit group-hover:scale-110 transition-transform duration-300">
                   <mode.icon className={`h-10 w-10 ${mode.iconColor}`} />
                 </div>
                 <Badge variant="outline" className={`${mode.badgeColor} text-[10px] mx-auto mb-2 w-fit`}>
                   {mode.badge}
                 </Badge>
-                <CardTitle className="text-xl text-white">{mode.title}</CardTitle>
+                <CardTitle className="text-xl text-card-foreground">{mode.title}</CardTitle>
               </CardHeader>
               <CardContent className="relative text-center pb-8">
                 <CardDescription className="text-zinc-400 text-sm leading-relaxed mb-6">

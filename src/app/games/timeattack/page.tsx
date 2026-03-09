@@ -11,6 +11,7 @@ import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
 import { AdBanner } from "@/components/ad-banner"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function TimeAttackGame() {
   const { showAlert } = useAlert()
@@ -37,8 +38,8 @@ export default function TimeAttackGame() {
   }, [loadGame])
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <Loading text="Loading game..." className="text-white" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loading text="Loading game..." className="text-foreground" />
     </div>
   )
 
@@ -47,14 +48,17 @@ export default function TimeAttackGame() {
   const barColor = timeLeft <= 10 ? "bg-red-500" : timeLeft <= 20 ? "bg-amber-500" : "bg-cyan-500"
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-y-auto flex flex-col">
+    <div className="min-h-screen bg-background text-foreground overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-10">
-        <Link href="/games">
-          <Button variant="ghost" className="text-zinc-400 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/games">
+            <Button variant="ghost" className="text-zinc-400 hover:text-foreground">
+              <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
+            </Button>
+          </Link>
+          <ThemeToggle />
+        </div>
         {gameState === "playing" && (
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 gap-1.5 px-3 py-1 text-sm">
@@ -72,7 +76,7 @@ export default function TimeAttackGame() {
         {gameState === "selecting" ? (
           /* Time Selection Screen */
           <div className="text-center animate-in fade-in duration-500 w-full max-w-lg">
-            <div className="mx-auto mb-6 p-5 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 w-fit">
+            <div className="mx-auto mb-6 p-5 rounded-2xl bg-muted/80 border border-border w-fit">
               <Timer className="h-16 w-16 text-cyan-400" />
             </div>
             <h2 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
@@ -85,7 +89,7 @@ export default function TimeAttackGame() {
                 <Button
                   key={seconds}
                   variant="outline"
-                  className="h-auto py-6 flex-col gap-2 border-zinc-700 bg-zinc-900 hover:bg-cyan-950/50 hover:border-cyan-500/50 text-white transition-all duration-200"
+                  className="h-auto py-6 flex-col gap-2 border-border bg-card hover:bg-cyan-950/10 hover:border-cyan-500/50 text-card-foreground transition-all duration-200"
                   onClick={() => startGame(seconds)}
                 >
                   <Clock className="h-6 w-6 text-cyan-400" />
@@ -105,7 +109,7 @@ export default function TimeAttackGame() {
                   {timeLeft}
                 </span>
               </div>
-              <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border">
                 <div
                   className={`h-full ${barColor} transition-all duration-1000 ease-linear`}
                   style={{ width: `${timerPercent}%` }}
@@ -114,23 +118,23 @@ export default function TimeAttackGame() {
             </div>
 
             {/* Question Card */}
-            <Card className="bg-zinc-900 border-zinc-800 shadow-2xl overflow-hidden">
-              <div className="bg-cyan-500/10 p-2 text-center border-b border-zinc-800">
+            <Card className="bg-card border-border shadow-2xl overflow-hidden">
+              <div className="bg-cyan-500/10 p-2 text-center border-b border-border">
                 <Badge variant="outline" className="text-cyan-400 border-cyan-700/50 text-[10px] md:text-xs">Choose the correct meaning</Badge>
               </div>
               <CardHeader className="text-center pt-4 md:pt-8 pb-2 md:pb-4 px-2 md:px-6">
-                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 break-words">{currentWord?.word}</CardTitle>
-                <p className="text-zinc-500 italic text-xs md:text-sm">{currentWord?.type}</p>
+                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-card-foreground mb-1 md:mb-2 break-words">{currentWord?.word}</CardTitle>
+                <p className="text-muted-foreground italic text-xs md:text-sm">{currentWord?.type}</p>
               </CardHeader>
               <CardContent className="p-3 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
                 {options.map((option, idx) => (
                   <Button
                     key={idx}
                     variant="outline"
-                    className={`h-auto min-h-[50px] py-2 md:py-4 px-3 md:px-6 flex items-start text-left border-zinc-800 bg-zinc-950 text-white hover:bg-zinc-800 transition-all text-[11px] sm:text-sm whitespace-normal ${feedback ? 'pointer-events-none' : ''}`}
+                    className={`h-auto min-h-[50px] py-2 md:py-4 px-3 md:px-6 flex items-start text-left border-border bg-background text-foreground hover:bg-muted transition-all text-[11px] sm:text-sm whitespace-normal ${feedback ? 'pointer-events-none' : ''}`}
                     onClick={() => handleAnswer(option)}
                   >
-                    <span className="text-zinc-600 mr-2 md:mr-3 font-mono shrink-0">{String.fromCharCode(65 + idx)}.</span>
+                    <span className="text-muted-foreground mr-2 md:mr-3 font-mono shrink-0">{String.fromCharCode(65 + idx)}.</span>
                     <span className="break-words leading-tight md:leading-normal mt-0.5 md:mt-0">{option}</span>
                   </Button>
                 ))}
@@ -177,7 +181,7 @@ export default function TimeAttackGame() {
                 Try Again
               </Button>
               <Link href="/games">
-                <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
+                <Button size="lg" variant="outline" className="px-8 text-lg border-border text-muted-foreground">Back</Button>
               </Link>
             </div>
             <ReviewWrongAnswers wrongAnswers={wrongAnswers} />

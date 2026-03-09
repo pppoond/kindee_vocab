@@ -12,6 +12,7 @@ import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
 import { AdBanner } from "@/components/ad-banner"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function VocabWritingGame() {
   const { showAlert } = useAlert()
@@ -51,8 +52,8 @@ export default function VocabWritingGame() {
   }, [gameState, currentWord, feedback])
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <Loading text="Loading game..." className="text-white" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loading text="Loading game..." className="text-foreground" />
     </div>
   )
 
@@ -68,14 +69,17 @@ export default function VocabWritingGame() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-y-auto flex flex-col">
+    <div className="min-h-screen bg-background text-foreground overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-10">
-        <Link href="/games">
-          <Button variant="ghost" className="text-zinc-400 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/games">
+            <Button variant="ghost" className="text-zinc-400 hover:text-foreground">
+              <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
+            </Button>
+          </Link>
+          <ThemeToggle />
+        </div>
         {gameState === "playing" && (
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 gap-1.5 px-3 py-1 text-sm">
@@ -93,7 +97,7 @@ export default function VocabWritingGame() {
         {gameState === "selecting" ? (
           /* Time Selection Screen */
           <div className="text-center animate-in fade-in duration-500 w-full max-w-lg">
-            <div className="mx-auto mb-6 p-5 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 w-fit">
+            <div className="mx-auto mb-6 p-5 rounded-2xl bg-muted/80 border border-border w-fit">
               <Pencil className="h-16 w-16 text-emerald-400" />
             </div>
             <h2 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
@@ -106,12 +110,12 @@ export default function VocabWritingGame() {
                 <Button
                   key={seconds}
                   variant="outline"
-                  className="h-auto py-6 flex-col gap-2 border-zinc-700 bg-zinc-900 hover:bg-emerald-950/50 hover:border-emerald-500/50 text-white transition-all duration-200"
+                  className="h-auto py-6 flex-col gap-2 border-border bg-card hover:bg-emerald-950/10 hover:border-emerald-500/50 text-card-foreground transition-all duration-200"
                   onClick={() => startGame(seconds)}
                 >
                   <Clock className="h-6 w-6 text-emerald-400" />
                   <span className="text-2xl font-black">{seconds}</span>
-                  <span className="text-xs text-zinc-500 ThaiFont">วินาที</span>
+                  <span className="text-xs text-muted-foreground ThaiFont">วินาที</span>
                 </Button>
               ))}
             </div>
@@ -126,7 +130,7 @@ export default function VocabWritingGame() {
                   {timeLeft}
                 </span>
               </div>
-              <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border">
                 <div
                   className={`h-full ${barColor} transition-all duration-1000 ease-linear`}
                   style={{ width: `${timerPercent}%` }}
@@ -141,7 +145,7 @@ export default function VocabWritingGame() {
               </div>
               <CardHeader className="text-center pt-4 md:pt-8 pb-2 md:pb-4 px-2 md:px-6">
                 <p className="text-zinc-500 italic text-xs md:text-sm mb-2">{currentWord?.type}</p>
-                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 break-words ThaiFont">
+                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-card-foreground mb-1 md:mb-2 break-words ThaiFont">
                   {currentWord?.meaning}
                 </CardTitle>
               </CardHeader>
@@ -152,7 +156,7 @@ export default function VocabWritingGame() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Type the English word..."
-                    className="h-12 md:h-16 text-xl md:text-2xl bg-zinc-950 border-zinc-800 focus-visible:ring-emerald-500 text-center font-bold"
+                    className="h-12 md:h-16 text-xl md:text-2xl bg-background border-border focus-visible:ring-emerald-500 text-center font-bold"
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"
@@ -211,7 +215,7 @@ export default function VocabWritingGame() {
                 Try Again
               </Button>
               <Link href="/games">
-                <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
+                <Button size="lg" variant="outline" className="px-8 text-lg border-border text-muted-foreground">Back</Button>
               </Link>
             </div>
             <ReviewWrongAnswers 

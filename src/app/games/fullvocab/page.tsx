@@ -13,6 +13,7 @@ import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
 import { AdBanner } from "@/components/ad-banner"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function FullVocabGame() {
   const { showAlert } = useAlert()
@@ -50,20 +51,23 @@ export default function FullVocabGame() {
   const barColor = timeLeft <= 3 ? "bg-red-500" : timeLeft <= 7 ? "bg-amber-500" : "bg-cyan-500"
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <Loading text="Loading game..." className="text-white" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loading text="Loading game..." className="text-foreground" />
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-y-auto flex flex-col">
+    <div className="min-h-screen bg-background text-foreground overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-10">
-        <Link href="/games">
-          <Button variant="ghost" className="text-zinc-400 hover:text-white">
-            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/games">
+            <Button variant="ghost" className="text-zinc-400 hover:text-foreground">
+              <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Games</span>
+            </Button>
+          </Link>
+          <ThemeToggle />
+        </div>
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="border-purple-500/50 text-purple-400 gap-1.5 px-3 py-1 text-sm">
             <BookOpen className="h-3.5 w-3.5" />
@@ -96,7 +100,7 @@ export default function FullVocabGame() {
                 />
               )}
               <div className="absolute -top-5 left-0 right-0 flex flex-col items-center">
-                <span className="text-[10px] md:text-xs text-white bg-black/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">{ASSETS.hero.name}</span>
+                <span className="text-[10px] md:text-xs text-foreground bg-background/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">{ASSETS.hero.name}</span>
                 <div className="w-[80%] md:w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                   <div 
                     className="h-full bg-green-500 transition-all duration-300" 
@@ -122,7 +126,7 @@ export default function FullVocabGame() {
                 />
               )}
               <div className="absolute -top-5 left-0 right-0 flex flex-col items-center">
-                <span className="text-[10px] md:text-xs text-white bg-black/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">{enemyStats.name}</span>
+                <span className="text-[10px] md:text-xs text-foreground bg-background/50 px-2 rounded backdrop-blur-sm uppercase tracking-widest mb-0.5 md:mb-1 whitespace-nowrap">{enemyStats.name}</span>
                 <div className="w-[80%] md:w-full h-1.5 md:h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                   <div 
                     className="h-full bg-orange-600 transition-all duration-300" 
@@ -153,23 +157,23 @@ export default function FullVocabGame() {
                 </div>
               </div>
 
-              <Card className="bg-zinc-900 border-zinc-800 shadow-2xl overflow-hidden">
-              <div className="bg-purple-500/10 p-2 text-center border-b border-zinc-800">
+              <Card className="bg-card border-border shadow-2xl overflow-hidden">
+              <div className="bg-purple-500/10 p-2 text-center border-b border-border">
                 <Badge variant="outline" className="text-purple-400 border-purple-700/50 text-[10px] md:text-xs">Full Vocab Mode — Choose the correct meaning</Badge>
               </div>
               <CardHeader className="text-center pt-4 md:pt-8 pb-2 md:pb-4 px-2 md:px-6">
-                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 break-words">{currentWord?.word}</CardTitle>
-                <p className="text-zinc-500 italic text-xs md:text-sm">{currentWord?.type}</p>
+                <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-card-foreground mb-1 md:mb-2 break-words">{currentWord?.word}</CardTitle>
+                <p className="text-muted-foreground italic text-xs md:text-sm">{currentWord?.type}</p>
               </CardHeader>
               <CardContent className="p-3 md:p-6 grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
                 {options.map((option, idx) => (
                   <Button
                     key={idx}
                     variant="outline"
-                    className={`h-auto min-h-[50px] py-2 md:py-4 px-3 md:px-6 flex items-start text-left border-zinc-800 bg-zinc-950 text-white hover:bg-zinc-800 transition-all text-[11px] sm:text-sm whitespace-normal ${feedback ? 'pointer-events-none' : ''}`}
+                    className={`h-auto min-h-[50px] py-2 md:py-4 px-3 md:px-6 flex items-start text-left border-border bg-background text-foreground hover:bg-muted transition-all text-[11px] sm:text-sm whitespace-normal ${feedback ? 'pointer-events-none' : ''}`}
                     onClick={() => handleAnswer(option)}
                   >
-                    <span className="text-zinc-600 mr-2 md:mr-3 font-mono shrink-0">{String.fromCharCode(65 + idx)}.</span>
+                    <span className="text-muted-foreground mr-2 md:mr-3 font-mono shrink-0">{String.fromCharCode(65 + idx)}.</span>
                     <span className="break-words leading-tight md:leading-normal mt-0.5 md:mt-0">{option}</span>
                   </Button>
                 ))}
@@ -209,7 +213,7 @@ export default function FullVocabGame() {
               <div className="flex gap-4 justify-center">
                 <Button size="lg" className="px-8 text-lg" onClick={resetGame}>Try Again</Button>
                 <Link href="/games">
-                  <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
+                  <Button size="lg" variant="outline" className="px-8 text-lg border-border text-muted-foreground">Back</Button>
                 </Link>
               </div>
               <ReviewWrongAnswers wrongAnswers={wrongAnswers} />
@@ -225,7 +229,7 @@ export default function FullVocabGame() {
           alt="Battle Background" 
           className="w-full h-full object-cover opacity-30 [image-rendering:pixelated]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-zinc-950/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/80" />
       </div>
     </div>
   )

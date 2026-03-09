@@ -10,6 +10,7 @@ import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
 import { AdBanner } from "@/components/ad-banner"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function FlashcardGame() {
   const { showAlert } = useAlert()
@@ -89,8 +90,8 @@ export default function FlashcardGame() {
   const onMouseLeave = () => { if (isDragging) handleDragEnd() }
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <Loading text="Loading game..." className="text-white" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loading text="Loading game..." className="text-foreground" />
     </div>
   )
 
@@ -108,7 +109,7 @@ export default function FlashcardGame() {
     : "border-zinc-700"
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-hidden flex flex-col select-none">
+    <div className="min-h-screen bg-background text-foreground overflow-hidden flex flex-col select-none">
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-10">
         <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
@@ -133,7 +134,7 @@ export default function FlashcardGame() {
         {gameState === "selecting" ? (
           /* Mode Selection */
           <div className="text-center animate-in fade-in duration-500 w-full max-w-lg">
-            <div className="mx-auto mb-6 p-5 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 w-fit">
+            <div className="mx-auto mb-6 p-5 rounded-2xl bg-muted/80 border border-border w-fit">
               <Layers className="h-16 w-16 text-emerald-400" />
             </div>
             <h2 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
@@ -145,12 +146,12 @@ export default function FlashcardGame() {
               {/* Normal Mode */}
               <Button
                 variant="outline"
-                className="h-auto py-6 flex-col gap-2 border-zinc-700 bg-zinc-900 hover:bg-emerald-950/50 hover:border-emerald-500/50 text-white transition-all duration-200"
+                className="h-auto py-6 flex-col gap-2 border-border bg-card hover:bg-emerald-950/10 hover:border-emerald-500/50 text-card-foreground transition-all duration-200"
                 onClick={() => startGame("normal")}
               >
                 <Layers className="h-6 w-6 text-emerald-400" />
                 <span className="text-xl font-black">Normal</span>
-                <span className="text-xs text-zinc-500">เล่นจนครบทุกคำ</span>
+                <span className="text-xs text-muted-foreground ThaiFont">เล่นจนครบทุกคำ</span>
               </Button>
 
               {/* Timed Mode - Time Selection */}
@@ -160,12 +161,12 @@ export default function FlashcardGame() {
                   <Button
                     key={seconds}
                     variant="outline"
-                    className="h-auto py-4 flex-col gap-1 border-zinc-700 bg-zinc-900 hover:bg-emerald-950/50 hover:border-emerald-500/50 text-white transition-all duration-200"
+                    className="h-auto py-4 flex-col gap-1 border-border bg-card hover:bg-emerald-950/10 hover:border-emerald-500/50 text-card-foreground transition-all duration-200"
                     onClick={() => startGame("timed", seconds)}
                   >
                     <Clock className="h-4 w-4 text-emerald-400" />
                     <span className="text-lg font-black">{seconds}</span>
-                    <span className="text-[10px] text-zinc-500">วินาที</span>
+                    <span className="text-[10px] text-muted-foreground ThaiFont">วินาที</span>
                   </Button>
                 ))}
               </div>
@@ -182,7 +183,7 @@ export default function FlashcardGame() {
                     {timeLeft}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border">
                   <div className={`h-full ${barColor} transition-all duration-1000 ease-linear`} style={{ width: `${timerPercent}%` }} />
                 </div>
               </div>
@@ -207,7 +208,7 @@ export default function FlashcardGame() {
               {/* The Card */}
               <div
                 ref={cardRef}
-                className={`w-72 sm:w-80 min-h-[320px] sm:min-h-[380px] rounded-2xl border-2 ${swipeIndicator} bg-zinc-900 flex flex-col items-center justify-center p-8 cursor-grab active:cursor-grabbing transition-shadow duration-200`}
+                className={`w-72 sm:w-80 min-h-[320px] sm:min-h-[380px] rounded-2xl border-2 ${swipeIndicator} bg-card flex flex-col items-center justify-center p-8 cursor-grab active:cursor-grabbing transition-shadow duration-200`}
                 style={{
                   transform: `translateX(${dragOffset}px) rotate(${rotation}deg)`,
                   opacity,
@@ -226,7 +227,7 @@ export default function FlashcardGame() {
                   <Badge variant="outline" className="text-zinc-500 border-zinc-700 text-[10px] mb-4">
                     {currentWord.type || "—"}
                   </Badge>
-                  <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-6 break-all">
+                  <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-card-foreground mb-6 break-all">
                     {currentWord.word}
                   </h2>
 
@@ -234,7 +235,7 @@ export default function FlashcardGame() {
                   {showMeaning && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className="w-12 h-px bg-zinc-700 mx-auto mb-4" />
-                      <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+                      <p className="text-muted-foreground text-sm sm:text-base leading-relaxed ThaiFont">
                         {currentWord.meaning}
                       </p>
                     </div>
@@ -316,7 +317,7 @@ export default function FlashcardGame() {
                 Try Again
               </Button>
               <Link href="/games">
-                <Button size="lg" variant="outline" className="px-8 text-lg border-zinc-700 text-zinc-300">Back</Button>
+                <Button size="lg" variant="outline" className="px-8 text-lg border-border text-muted-foreground">Back</Button>
               </Link>
             </div>
             <ReviewWrongAnswers wrongAnswers={wrongAnswers} />
