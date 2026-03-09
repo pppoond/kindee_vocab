@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ import { AdBanner } from "@/components/ad-banner"
 
 export default function BattleGame() {
   const { showAlert } = useAlert()
+  const onAlert = useCallback((msg: string) => showAlert(msg, { type: "error" }), [showAlert])
   const {
     currentWord,
     options,
@@ -36,7 +37,7 @@ export default function BattleGame() {
     loadGame,
     handleAnswer,
     resetGame,
-  } = useGameEngine("normal", (msg) => showAlert(msg, { type: "error" }))
+  } = useGameEngine("normal", onAlert)
 
   useEffect(() => {
     loadGame()

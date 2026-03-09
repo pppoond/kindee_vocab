@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -34,8 +34,8 @@ export function useVocabWritingEngine(onAlert?: (message: string) => void) {
   const gameStateRef = useRef<VocabWritingState>("selecting")
   const isSavedRef = useRef(false)
 
-  const supabase = createClient()
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
 
   const setupTurn = useCallback((list: Vocabulary[]) => {
     if (list.length === 0) return

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useCallback, useRef, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,9 +38,9 @@ export default function VerbMasterPage() {
   const wrongCountRef = useRef(0)
   const wrongAnswersRef = useRef<string[]>([])
   
-  const supabase = createClient()
-  const { showAlert } = useAlert()
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
+  const { showAlert } = useAlert()
 
   const fetchVerbs = useCallback(async () => {
     setLoading(true)
