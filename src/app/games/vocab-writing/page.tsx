@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,8 @@ export default function VocabWritingGame() {
   const [inputValue, setInputValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   
+  const onAlert = useCallback((msg: string) => showAlert(msg, { type: "error" }), [showAlert])
+  
   const {
     currentWord,
     loading,
@@ -32,7 +34,7 @@ export default function VocabWritingGame() {
     startGame,
     handleAnswer,
     resetGame,
-  } = useVocabWritingEngine((msg) => showAlert(msg, { type: "error" }))
+  } = useVocabWritingEngine(onAlert)
 
   useEffect(() => {
     loadGame()

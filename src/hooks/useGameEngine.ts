@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { ASSETS, getEnemyStats, HERO_DAMAGE, getAllAssetUrls, preloadImages } from "@/lib/game-assets"
 import { useRouter } from "next/navigation"
@@ -46,8 +46,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const isSavedRef = useRef(false)
   const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, wrongWords: [] as any[], result: "lost" as "won" | "lost" | "finished" })
 
-  const supabase = createClient()
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
 
   const setupTurn = useCallback((list: Vocabulary[], currentLevel: number) => {
     const word = list[Math.floor(Math.random() * list.length)]

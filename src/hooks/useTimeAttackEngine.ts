@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -35,8 +35,8 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
   const gameStateRef = useRef<TimeAttackState>("selecting")
   const isSavedRef = useRef(false)
 
-  const supabase = createClient()
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
 
   const setupTurn = useCallback((list: Vocabulary[]) => {
     const word = list[Math.floor(Math.random() * list.length)]

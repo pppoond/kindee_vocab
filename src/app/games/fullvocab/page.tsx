@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ import { AdBanner } from "@/components/ad-banner"
 
 export default function FullVocabGame() {
   const { showAlert } = useAlert()
+  const onAlert = useCallback((msg: string) => showAlert(msg, { type: "error" }), [showAlert])
   const {
     currentWord,
     options,
@@ -36,7 +37,7 @@ export default function FullVocabGame() {
     loadGame,
     handleAnswer,
     resetGame,
-  } = useGameEngine("fullvocab", (msg) => showAlert(msg, { type: "error" }))
+  } = useGameEngine("fullvocab", onAlert)
 
   useEffect(() => {
     loadGame()

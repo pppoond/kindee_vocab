@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Trophy, RotateCcw, Clock, X, Check, Layers, Timer } from "lucide-react"
@@ -13,6 +13,7 @@ import { AdBanner } from "@/components/ad-banner"
 
 export default function FlashcardGame() {
   const { showAlert } = useAlert()
+  const onAlert = useCallback((msg: string) => showAlert(msg, { type: "error" }), [showAlert])
   const {
     currentWord,
     loading,
@@ -30,7 +31,7 @@ export default function FlashcardGame() {
     startGame,
     handleSwipe,
     resetGame,
-  } = useFlashcardEngine((msg) => showAlert(msg, { type: "error" }))
+  } = useFlashcardEngine(onAlert)
 
   // Swipe gesture handling
   const cardRef = useRef<HTMLDivElement>(null)

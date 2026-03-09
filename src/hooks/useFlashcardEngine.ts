@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -39,8 +39,8 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
   const isSavedRef = useRef(false)
   const wrongAnswersRef = useRef<string[]>([])
 
-  const supabase = createClient()
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
 
   const nextCard = useCallback((currentQueue: Vocabulary[]) => {
     if (currentQueue.length === 0) {
