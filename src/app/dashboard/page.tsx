@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { CheckCircle2, Circle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -521,63 +522,74 @@ export default function Dashboard() {
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                          <CardTitle className="text-xl break-all">
+                          <CardTitle className="text-xl font-bold tracking-tight">
                             {v.word}
                             {v.type === "Verb" && (v.v2 || v.v3) && (
-                              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                                ({v.v2 || "-"} • {v.v3 || "-"})
+                              <span className="ml-2 text-xs font-normal text-muted-foreground bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                {v.v2 || "-"} • {v.v3 || "-"}
                               </span>
                             )}
                           </CardTitle>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-primary" onClick={() => speakWord(v.word)}>
-                              <Volume2 className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className={`h-7 w-7 transition-colors ${apiExamples[v.word] ? 'text-emerald-500 hover:text-emerald-600' : 'text-zinc-400 hover:text-primary'}`}
-                              onClick={() => fetchExamples(v.word)}
-                              disabled={exampleLoading[v.word]}
-                            >
-                              {exampleLoading[v.word] ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Lightbulb className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                          {v.memorized && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Memorized</Badge>}
+                          {v.memorized && <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100 border-none text-[10px] h-5 px-1.5">Memorized</Badge>}
                         </div>
                         {v.type && (
-                          <div className="flex">
-                            <Badge variant="secondary" className="text-xs">{v.type}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-none">{v.type}</Badge>
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 shrink-0 bg-zinc-100/50 dark:bg-zinc-800/50 p-1 rounded-full border border-zinc-200/50 dark:border-zinc-700/50">
                         <Button 
                           variant="ghost" 
-                          size="sm" 
-                          className={v.memorized ? "text-zinc-400" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
+                          size="icon" 
+                          className={`h-8 w-8 rounded-full transition-colors ${v.memorized ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" : "text-zinc-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"}`}
                           onClick={() => toggleMemorized(v.id, v.memorized)}
+                          title={v.memorized ? "Unmark as memorized" : "Mark as memorized"}
                         >
-                          {v.memorized ? "Unmark" : "Mark Memorized"}
+                          {v.memorized ? <CheckCircle2 className="h-4.5 w-4.5" /> : <Circle className="h-4.5 w-4.5" />}
                         </Button>
+                        
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-full text-zinc-400 hover:text-primary hover:bg-primary/5" 
+                          onClick={() => speakWord(v.word)}
+                          title="Speak word"
+                        >
+                          <Volume2 className="h-4.5 w-4.5" />
+                        </Button>
+
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className={`h-8 w-8 rounded-full transition-colors ${apiExamples[v.word] ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10' : 'text-zinc-400 hover:text-primary hover:bg-primary/5'}`}
+                          onClick={() => fetchExamples(v.word)}
+                          disabled={exampleLoading[v.word]}
+                          title="View examples"
+                        >
+                          {exampleLoading[v.word] ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Lightbulb className="h-4.5 w-4.5" />
+                          )}
+                        </Button>
+
+                        <div className="w-[1px] h-4 bg-zinc-200 dark:bg-zinc-700 mx-0.5" />
+
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-zinc-400">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenEdit(v)} className="gap-2">
+                          <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem onClick={() => handleOpenEdit(v)} className="gap-2 cursor-pointer">
                               <Pencil className="h-4 w-4" />
-                              Edit
+                              Edit Word
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => deleteWord(v.id)} className="gap-2 text-red-600 focus:text-red-600">
+                            <DropdownMenuItem onClick={() => deleteWord(v.id)} className="gap-2 text-red-600 focus:text-red-600 cursor-pointer">
                               <Trash2 className="h-4 w-4" />
-                              Delete
+                              Delete Word
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
