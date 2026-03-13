@@ -40,13 +40,24 @@ export async function updateSession(request: NextRequest) {
     !user &&
     request.nextUrl.pathname !== '/' &&
     !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/register') &&
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/donate') &&
     !request.nextUrl.pathname.startsWith('/googlee9b399be387fb935.html')
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    
+    // Create a new response for the redirect
+    const redirectResponse = NextResponse.redirect(url)
+    
+    // IMPORTANT: Copy cookies from the middleware's current supabaseResponse 
+    // to the redirect response to ensure session persistence/updates are not lost.
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    
+    return redirectResponse
   }
 
   return supabaseResponse

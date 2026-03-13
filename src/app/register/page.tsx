@@ -12,7 +12,7 @@ import { useAlert } from "@/components/alert-provider"
 import { Loader2 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -22,19 +22,18 @@ export default function LoginPage() {
   const router = useRouter()
   const { showAlert } = useAlert()
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       })
       if (error) throw error
-      router.refresh()
-      router.push("/dashboard")
+      showAlert("Check your email for the confirmation link!", { type: "success" })
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -55,13 +54,13 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight text-center">
-            Welcome back
+            Create an account
           </CardTitle>
           <CardDescription className="text-center">
-            Enter your email below to login to your account
+            Enter your email below to create your account
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleAuth}>
+        <form onSubmit={handleSignUp}>
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -83,12 +82,6 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required 
               />
-              <Link
-                href="/login/forgot-password"
-                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-              >
-                Forgot password?
-              </Link>
             </div>
             {error && (
               <p className="text-sm text-destructive">{error}</p>
@@ -101,7 +94,7 @@ export default function LoginPage() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...
                 </>
-              ) : "Login"}
+              ) : "Sign Up"}
             </Button>
             <Button 
               variant="ghost" 
@@ -109,8 +102,8 @@ export default function LoginPage() {
               className="w-full"
               asChild
             >
-              <Link href="/register">
-                Don't have an account? Sign Up
+              <Link href="/login">
+                Already have an account? Login
               </Link>
             </Button>
           </CardFooter>
