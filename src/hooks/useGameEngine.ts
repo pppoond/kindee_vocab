@@ -119,7 +119,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           ? "You need at least some non-memorized words to play! Add them in the dashboard."
           : "You need at least some words to play! Add them in the dashboard."
         if (onAlert) onAlert(msg)
-        router.push("/")
+        router.push("/dashboard")
       }
       return
     }

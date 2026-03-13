@@ -33,7 +33,7 @@ export default function RegisterPage() {
         password,
       })
       if (error) throw error
-      await showAlert("Success Register", { type: "success" })
+      await showAlert("Registration successful!", { type: "success" })
       router.push("/login")
     } catch (err: any) {
       setError(err.message)

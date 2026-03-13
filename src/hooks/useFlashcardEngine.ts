@@ -73,7 +73,7 @@ export function useFlashcardEngine(onAlert?: (message: string) => void) {
       setLoading(false)
       if (!error && data?.length === 0) {
         if (onAlert) onAlert("You need at least some words to play! Add them in the dashboard.")
-        router.push("/")
+        router.push("/dashboard")
       }
       return
     }
