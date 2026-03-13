@@ -53,8 +53,17 @@ export async function updateSession(request: NextRequest) {
     
     // IMPORTANT: Copy cookies from the middleware's current supabaseResponse 
     // to the redirect response to ensure session persistence/updates are not lost.
+    // We must copy ALL options (path, domain, etc.) to maintain cookie scope.
     supabaseResponse.cookies.getAll().forEach(cookie => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
+      redirectResponse.cookies.set(cookie.name, cookie.value, {
+        path: cookie.path,
+        domain: cookie.domain,
+        maxAge: cookie.maxAge,
+        expires: cookie.expires,
+        sameSite: cookie.sameSite,
+        secure: cookie.secure,
+        httpOnly: cookie.httpOnly,
+      })
     })
     
     return redirectResponse
