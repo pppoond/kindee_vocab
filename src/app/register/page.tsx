@@ -33,7 +33,8 @@ export default function RegisterPage() {
         password,
       })
       if (error) throw error
-      showAlert("Check your email for the confirmation link!", { type: "success" })
+      await showAlert("Success Register", { type: "success" })
+      router.push("/login")
     } catch (err: any) {
       setError(err.message)
     } finally {
