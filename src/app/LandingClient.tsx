@@ -71,7 +71,7 @@ export function LandingClient() {
                   <Link href="/login">
                     <Button variant="ghost" className="rounded-full hover:bg-amber-500/10">Sign In</Button>
                   </Link>
-                  <Link href="/login?tab=signup">
+                  <Link href="/register">
                     <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">Get Started</Button>
                   </Link>
                 </div>
@@ -139,7 +139,7 @@ export function LandingClient() {
                     <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                       <Button variant="outline" className="w-full rounded-xl h-12">Sign In</Button>
                     </Link>
-                    <Link href="/login?tab=signup" onClick={() => setIsMenuOpen(false)}>
+                    <Link href="/register" onClick={() => setIsMenuOpen(false)}>
                       <Button className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 h-12">Get Started</Button>
                     </Link>
                   </>
