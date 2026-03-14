@@ -90,7 +90,7 @@ export default function Dashboard() {
 
     let query = supabase
       .from("vocabularies")
-      .select("id, word, type, meaning, example, memorized, created_at", { count: "exact" })
+      .select("id, word, type, meaning, v2, v3, example, memorized, created_at", { count: "exact" })
       .order("created_at", { ascending: false })
 
     if (search.trim()) {
