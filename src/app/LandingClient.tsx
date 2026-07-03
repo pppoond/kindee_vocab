@@ -47,6 +47,7 @@ export function LandingClient() {
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
             <Link href="#features" className="hover:text-amber-500 transition-colors">ฟีเจอร์</Link>
+            <Link href="/learn/oxford3000" className="hover:text-amber-500 transition-colors">คลังศัพท์ 3000 คำ</Link>
             <Link href="/games" className="hover:text-amber-500 transition-colors">Games</Link>
             <Link href="/verb3" className="hover:text-amber-500 transition-colors">กริยา 3 ช่อง</Link>
             <Link href="/donate" className="hover:text-rose-500 transition-colors flex items-center gap-1.5">
@@ -100,6 +101,13 @@ export function LandingClient() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 ฟีเจอร์
+              </Link>
+              <Link 
+                href="/learn/oxford3000" 
+                className="text-lg font-medium hover:text-amber-500 py-2 border-b border-zinc-100 dark:border-zinc-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                คลังศัพท์ 3000 คำ
               </Link>
               <Link 
                 href="/games" 
@@ -328,6 +336,7 @@ export function LandingClient() {
                <span className="text-zinc-500 font-semibold uppercase tracking-widest text-xs">Kindee Vocab &copy; 2026</span>
             </div>
             <div className="flex gap-8 text-sm text-zinc-500">
+               <Link href="/learn/oxford3000" className="hover:text-amber-500 underline-offset-4 hover:underline">คลังศัพท์ 3000 คำ</Link>
                <Link href="/games" className="hover:text-amber-500 underline-offset-4 hover:underline">มินิเกมสุดจอย</Link>
                <Link href="/verb3" className="hover:text-amber-500 underline-offset-4 hover:underline">กริยา 3 ช่อง</Link>
                <Link href="/donate" className="hover:text-rose-500 underline-offset-4 hover:underline">ซัพพอร์ตเรา</Link>

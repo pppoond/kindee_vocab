@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/register') &&
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/donate') &&
+    !request.nextUrl.pathname.startsWith('/learn') &&
     !request.nextUrl.pathname.startsWith('/googlee9b399be387fb935.html') &&
     !request.nextUrl.pathname.startsWith('/sitemap.xml') &&
     !request.nextUrl.pathname.startsWith('/BingSiteAuth.xml')

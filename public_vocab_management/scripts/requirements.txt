@@ -1,0 +1,4 @@
+supabase
+requests
+deep-translator
+python-dotenv
