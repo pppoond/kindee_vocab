@@ -8,6 +8,15 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Check, Search } from 'lucide-react'
 import { useAlert } from '@/components/alert-provider'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog"
+import Link from 'next/link'
 
 type PublicWord = {
   id: string
@@ -28,6 +37,7 @@ type Props = {
 export function VocabListClient({ words, category }: Props) {
   const [search, setSearch] = useState('')
   const [activeLetter, setActiveLetter] = useState<string | null>(null)
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set())
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set())
   const [userId, setUserId] = useState<string | null>(null)
@@ -74,7 +84,7 @@ export function VocabListClient({ words, category }: Props) {
 
   const handleAddWord = async (word: PublicWord) => {
     if (!userId) {
-      showAlert('กรุณาเข้าสู่ระบบก่อนเพิ่มคำศัพท์', 'error')
+      setShowLoginModal(true)
       return
     }
 
@@ -95,14 +105,14 @@ export function VocabListClient({ words, category }: Props) {
 
       if (error) {
         console.error('Error adding word:', error)
-        showAlert('เกิดข้อผิดพลาดในการเพิ่มคำศัพท์', 'error')
+        showAlert('เกิดข้อผิดพลาดในการเพิ่มคำศัพท์', { type: 'error' })
       } else {
         setAddedIds(prev => new Set(prev).add(word.id))
-        showAlert('เพิ่มเข้าคลังคำศัพท์แล้ว!', 'success')
+        showAlert('เพิ่มเข้าคลังคำศัพท์แล้ว!', { type: 'success' })
       }
     } catch (err) {
       console.error(err)
-      showAlert('เกิดข้อผิดพลาดในการเพิ่มคำศัพท์', 'error')
+      showAlert('เกิดข้อผิดพลาดในการเพิ่มคำศัพท์', { type: 'error' })
     } finally {
       const next = new Set(addingIds)
       next.delete(word.id)
@@ -216,6 +226,27 @@ export function VocabListClient({ words, category }: Props) {
           </Button>
         </div>
       )}
+
+      <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>กรุณาเข้าสู่ระบบ</DialogTitle>
+            <DialogDescription>
+              คุณต้องเข้าสู่ระบบหรือสมัครสมาชิกก่อน เพื่อเพิ่มคำศัพท์นี้ลงในคลังส่วนตัวของคุณ
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowLoginModal(false)}>
+              ไว้คราวหน้า
+            </Button>
+            <Link href="/login" className="w-full sm:w-auto">
+              <Button className="w-full bg-amber-500 hover:bg-amber-600">
+                เข้าสู่ระบบ / สมัครสมาชิก
+              </Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
