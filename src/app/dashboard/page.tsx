@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CheckCircle2, Circle } from "lucide-react"
+import { CheckCircle2, Brain } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -74,6 +74,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterMemorized, setFilterMemorized] = useState("all")
+  const [publicTags, setPublicTags] = useState<{name: string}[]>([])
   
   // New states for example sentences
   const [apiExamples, setApiExamples] = useState<Record<string, string[]>>({})
@@ -186,9 +187,12 @@ export default function Dashboard() {
       setUser(user)
       fetchVocabularies(currentPage)
       fetchDailyStats()
+
+      const { data: tags } = await supabase.from('public_tags').select('name').order('name')
+      if (tags) setPublicTags(tags)
     }
     getUser()
-  }, [currentPage, fetchVocabularies, fetchDailyStats, router, supabase.auth])
+  }, [currentPage, fetchVocabularies, fetchDailyStats, router, supabase.auth, supabase])
 
   const handleOpenAdd = () => {
     setEditingWord(null)
@@ -311,7 +315,7 @@ export default function Dashboard() {
             
             {/* Profile & Support */}
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="bg-zinc-900 border-zinc-800 text-rose-400 hover:bg-rose-950/20 hover:text-rose-400 gap-2 border-rose-500/20 shadow-[0_0_15px_rgba(225,29,72,0.1)]" asChild>
+              <Button variant="outline" size="sm" className="bg-rose-50 dark:bg-zinc-900 border-rose-200 dark:border-zinc-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/20 hover:text-rose-700 dark:hover:text-rose-400 gap-2 shadow-[0_0_15px_rgba(225,29,72,0.1)] transition-colors" asChild>
                 <Link href="/donate">
                   <Heart className="h-4 w-4 fill-rose-500 animate-pulse" />
                   <span className="hidden sm:inline">Support</span>
@@ -329,49 +333,103 @@ export default function Dashboard() {
       <main className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-blue-500 dark:border-l-blue-400">
-            <CardHeader className="pb-2">
-              <CardDescription>Total Vocabulary</CardDescription>
-              <CardTitle className="text-4xl">{totalCount}</CardTitle>
-            </CardHeader>
-          </Card>
+          {/* Card 1: Total Vocabulary */}
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/40 p-6 shadow-sm hover:shadow-lg transition-all duration-300 group backdrop-blur-xl">
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-blue-500/10 dark:bg-blue-500/10 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Total Vocab</p>
+                <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{totalCount}</h3>
+              </div>
+              <div className="p-3 bg-blue-100 dark:bg-blue-500/20 rounded-2xl text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
+                <BookOpen className="h-6 w-6" />
+              </div>
+            </div>
+          </div>
           
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-violet-500 dark:border-l-violet-400">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5"><Gamepad2 className="h-3.5 w-3.5" /> Today&apos;s Games</CardDescription>
-              <CardTitle className="text-4xl">{dailyStats.gamesPlayed}</CardTitle>
-            </CardHeader>
-          </Card>
+          {/* Card 2: Today's Games */}
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/40 p-6 shadow-sm hover:shadow-lg transition-all duration-300 group backdrop-blur-xl">
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-violet-500/10 dark:bg-violet-500/10 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Today's Games</p>
+                <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-zinc-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{dailyStats.gamesPlayed}</h3>
+              </div>
+              <div className="p-3 bg-violet-100 dark:bg-violet-500/20 rounded-2xl text-violet-600 dark:text-violet-400 ring-1 ring-violet-500/20">
+                <Gamepad2 className="h-6 w-6" />
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-amber-500 dark:border-l-amber-400">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> Best Level Today</CardDescription>
-              <CardTitle className="text-4xl">{dailyStats.bestLevel || "—"}</CardTitle>
-            </CardHeader>
-          </Card>
+          {/* Card 3: Best Level */}
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/40 p-6 shadow-sm hover:shadow-lg transition-all duration-300 group backdrop-blur-xl">
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-amber-500/10 dark:bg-amber-500/10 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Best Level</p>
+                <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-zinc-900 dark:text-white group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">{dailyStats.bestLevel || "—"}</h3>
+              </div>
+              <div className="p-3 bg-amber-100 dark:bg-amber-500/20 rounded-2xl text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20">
+                <Star className="h-6 w-6" />
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-4 border-l-emerald-500 dark:border-l-emerald-400">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-1.5"><Target className="h-3.5 w-3.5" /> Today&apos;s Accuracy</CardDescription>
-              <CardTitle className="text-4xl">
-                {dailyStats.correctCount + dailyStats.wrongCount > 0
-                  ? `${Math.round((dailyStats.correctCount / (dailyStats.correctCount + dailyStats.wrongCount)) * 100)}%`
-                  : "—"}
-              </CardTitle>
-            </CardHeader>
-          </Card>
+          {/* Card 4: Accuracy */}
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/40 p-6 shadow-sm hover:shadow-lg transition-all duration-300 group backdrop-blur-xl">
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-emerald-500/10 dark:bg-emerald-500/10 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Accuracy</p>
+                <h3 className="text-4xl sm:text-5xl font-black tracking-tight text-zinc-900 dark:text-white group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
+                  {dailyStats.correctCount + dailyStats.wrongCount > 0
+                    ? `${Math.round((dailyStats.correctCount / (dailyStats.correctCount + dailyStats.wrongCount)) * 100)}%`
+                    : "—"}
+                </h3>
+              </div>
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                <Target className="h-6 w-6" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <AdBanner position="dashboard_middle" />
 
         <div className="mb-8">
           <Button 
-            className="w-full h-auto flex-col items-center justify-center gap-2 py-6 text-lg"
+            variant="outline"
+            className="w-full h-auto flex-col items-center justify-center gap-3 py-8 text-lg border-2 border-dashed border-amber-500/40 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-500 transition-all rounded-2xl"
             onClick={handleOpenAdd}
           >
-            <Plus className="h-8 w-8" />
-            Add New Word
+            <div className="bg-amber-100 dark:bg-amber-500/20 p-3 rounded-full">
+              <Plus className="h-6 w-6" />
+            </div>
+            <span className="font-bold">Add New Word</span>
           </Button>
+        </div>
+
+        {/* Public Vocabularies */}
+        <div className="mb-10 space-y-4 p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-amber-500" />
+            <h2 className="text-xl font-bold">คลังคำศัพท์สาธารณะ</h2>
+          </div>
+          <p className="text-muted-foreground text-sm">
+            กดเพื่อเข้าไปดูคำศัพท์ และกดเครื่องหมาย (+) เพื่อคัดลอกมาลงในคลังส่วนตัวของคุณได้ทันที
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {publicTags.map(tag => (
+              <Link key={tag.name} href={`/learn/${tag.name}`}>
+                <Button variant="outline" className="rounded-full capitalize border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-900/10 hover:text-amber-600 transition-colors shadow-sm">
+                  {tag.name}
+                </Button>
+              </Link>
+            ))}
+            {publicTags.length === 0 && (
+              <span className="text-sm text-muted-foreground">ยังไม่มีคลังคำศัพท์สาธารณะ</span>
+            )}
+          </div>
         </div>
 
         {/* Add/Edit Dialog */}
@@ -541,12 +599,22 @@ export default function Dashboard() {
                           <div className="flex items-center gap-1">
                             <Button 
                               variant="ghost" 
-                              size="icon" 
-                              className={`h-8 w-8 rounded-full transition-colors ${v.memorized ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" : "text-zinc-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"}`}
+                              size="sm" 
+                              className={`h-8 rounded-full transition-all gap-1.5 px-3 ${v.memorized ? "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20" : "text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 hover:text-emerald-600 hover:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"}`}
                               onClick={() => toggleMemorized(v.id, v.memorized)}
-                              title={v.memorized ? "Unmark as memorized" : "Mark as memorized"}
+                              title={v.memorized ? "เปลี่ยนเป็นยังจำไม่ได้" : "ทำเครื่องหมายว่าจำได้แล้ว"}
                             >
-                              {v.memorized ? <CheckCircle2 className="h-4.5 w-4.5" /> : <Circle className="h-4.5 w-4.5" />}
+                              {v.memorized ? (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  <span className="text-xs font-medium">จำได้แล้ว</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Brain className="h-4 w-4" />
+                                  <span className="text-xs font-medium">กำลังจำ</span>
+                                </>
+                              )}
                             </Button>
                             
                             <Button 

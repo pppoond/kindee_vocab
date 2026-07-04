@@ -55,10 +55,8 @@ export function LandingClient() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
+          <div className="flex items-center gap-1 md:gap-4">
+            <ThemeToggle />
             
             <div className="hidden md:flex items-center gap-4">
               {user ? (
@@ -309,17 +307,19 @@ export function LandingClient() {
       {/* Support Section */}
       <section className="py-20">
          <div className="mx-auto max-w-4xl px-4 text-center">
-            <div className="p-8 md:p-12 rounded-3xl bg-zinc-900 border border-zinc-800 relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <Heart className="h-32 w-32 fill-rose-500" />
+            <div className="p-8 md:p-12 rounded-3xl bg-rose-50/50 dark:bg-zinc-900/50 border border-rose-200/60 dark:border-zinc-800/60 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow backdrop-blur-sm group">
+               <div className="absolute top-0 right-0 p-4 opacity-[0.08] dark:opacity-10 group-hover:scale-110 transition-transform duration-700">
+                  <Heart className="h-40 w-40 fill-rose-500" />
                </div>
-               <h2 className="text-3xl font-bold text-white mb-4">ซัพพอร์ต Kindee Vocab</h2>
-               <p className="text-zinc-400 mb-8 max-w-lg mx-auto text-lg leading-relaxed">
+               <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-rose-500/10 blur-3xl rounded-full" />
+               
+               <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4 relative z-10">ซัพพอร์ต Kindee Vocab</h2>
+               <p className="text-zinc-600 dark:text-zinc-400 mb-8 max-w-lg mx-auto text-lg leading-relaxed relative z-10">
                  ร่วมเป็นส่วนหนึ่งในการซัพพอร์ตค่า Server และพัฒนาฟีเจอร์ใหม่ๆ 
                  เพื่อให้ทุกคนได้อัปสกิลภาษาอังกฤษแบบสนุกจอยๆ ไปด้วยกัน
                </p>
-               <Link href="/donate">
-                  <Button size="lg" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-none gap-2 px-8">
+               <Link href="/donate" className="relative z-10 inline-block">
+                  <Button size="lg" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-none gap-2 px-8 shadow-lg shadow-rose-500/25 transition-all hover:scale-105">
                      <Heart className="h-5 w-5 fill-white" /> Support Kindee
                   </Button>
                </Link>

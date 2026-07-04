@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Check, Search } from 'lucide-react'
+import { Plus, Check, Search, Volume2 } from 'lucide-react'
 import { useAlert } from '@/components/alert-provider'
 import {
   Dialog,
@@ -82,6 +82,16 @@ export function VocabListClient({ words, category }: Props) {
     return filteredWords.slice(0, page * ITEMS_PER_PAGE)
   }, [filteredWords, page])
 
+  const speakWord = (word: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance(word)
+      utterance.lang = 'en-US'
+      utterance.rate = 0.9
+      window.speechSynthesis.speak(utterance)
+    }
+  }
+
   const handleAddWord = async (word: PublicWord) => {
     if (!userId) {
       setShowLoginModal(true)
@@ -138,26 +148,34 @@ export function VocabListClient({ words, category }: Props) {
       <div className="mb-8 pb-4">
         <div className="flex flex-wrap gap-2 px-2 mx-auto justify-center">
           <Button
-            variant={activeLetter === null ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => {
               setActiveLetter(null)
               setPage(1)
             }}
-            className="rounded-full"
+            className={`rounded-full transition-all px-5 ${
+              activeLetter === null
+                ? "bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white border-none shadow-md shadow-amber-500/20 font-bold"
+                : "text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-amber-500/50 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+            }`}
           >
             All
           </Button>
           {ALPHABETS.map((letter) => (
             <Button
               key={letter}
-              variant={activeLetter === letter ? "default" : "outline"}
+              variant="outline"
               size="sm"
               onClick={() => {
                 setActiveLetter(activeLetter === letter ? null : letter)
                 setPage(1)
               }}
-              className="rounded-full w-9 h-9 p-0"
+              className={`rounded-full w-9 h-9 p-0 transition-all ${
+                activeLetter === letter
+                  ? "bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white border-none shadow-md shadow-amber-500/20 font-bold"
+                  : "text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-amber-500/50 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+              }`}
             >
               {letter}
             </Button>
@@ -182,20 +200,36 @@ export function VocabListClient({ words, category }: Props) {
                   <p className="text-muted-foreground font-medium mt-1 text-sm">{word.meaning}</p>
                 </div>
                 
-                <Button 
-                  size="icon" 
-                  variant={addedIds.has(word.id) ? "secondary" : "default"}
-                  className="rounded-full h-8 w-8 shrink-0"
-                  onClick={() => handleAddWord(word)}
-                  disabled={addingIds.has(word.id) || addedIds.has(word.id)}
-                  title="เพิ่มเข้าคลัง"
-                >
-                  {addedIds.has(word.id) ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                </Button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full h-8 w-8 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10"
+                    onClick={() => speakWord(word.word)}
+                    title="อ่านออกเสียง"
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
+
+                  <Button 
+                    size="icon" 
+                    variant={addedIds.has(word.id) ? "outline" : "default"}
+                    className={`rounded-full h-8 w-8 transition-all ${
+                      addedIds.has(word.id) 
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 opacity-100" 
+                        : "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white shadow-sm shadow-amber-500/20 border-none"
+                    }`}
+                    onClick={() => handleAddWord(word)}
+                    disabled={addingIds.has(word.id) || addedIds.has(word.id)}
+                    title="เพิ่มเข้าคลัง"
+                  >
+                    {addedIds.has(word.id) ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
               
               {word.example && (
