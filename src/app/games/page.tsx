@@ -1,12 +1,16 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers, Pencil } from "lucide-react"
+import { ArrowLeft, Swords, BookOpen, Timer, ChevronRight, Layers, Pencil, Lock } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { AdBanner } from "@/components/ad-banner"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAlert } from "@/components/alert-provider"
 
 const GAME_MODES = [
   {
@@ -77,14 +81,39 @@ const GAME_MODES = [
   },
 ]
 
+const OXFORD_MODE = {
+  title: "Oxford 3000 Mode",
+  description: "เล่นโหมด RPG ด้วยคำศัพท์ระดับ Oxford 3000 ยอดฮิต! (เปิดให้เล่นฟรีสำหรับทุกคน)",
+  href: "/games/oxford3000",
+  icon: BookOpen,
+  color: "from-blue-500/20 to-indigo-500/20",
+  borderColor: "border-blue-500/30 hover:border-blue-500/60",
+  iconColor: "text-blue-400",
+  badge: "PUBLIC",
+  badgeColor: "border-blue-500/50 text-blue-400",
+}
+
+const ALL_MODES = [OXFORD_MODE, ...GAME_MODES]
+
 export default function GamesPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter()
+  const { showConfirm } = useAlert()
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setIsLoggedIn(true)
+    })
+  }, [])
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Back to Dashboard</span>
+          <Link href={isLoggedIn ? "/dashboard" : "/"}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">{isLoggedIn ? "Back to Dashboard" : "Back to Home"}</span>
           </Link>
         </Button>
         <ThemeToggle />
@@ -100,30 +129,51 @@ export default function GamesPage() {
 
       {/* Game Mode Cards */}
       <div className="max-w-5xl mx-auto px-4 pb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {GAME_MODES.map((mode) => (
-          <Link key={mode.href} href={mode.href} className="group">
-            <Card className={`relative bg-card ${mode.borderColor} border-2 transition-all duration-300 h-full group-hover:scale-[1.03] group-hover:shadow-2xl overflow-hidden`}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${mode.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-              <CardHeader className="relative text-center pb-3 pt-8">
-                <div className="mx-auto mb-4 p-4 rounded-2xl bg-muted/80 border border-border w-fit group-hover:scale-110 transition-transform duration-300">
-                  <mode.icon className={`h-10 w-10 ${mode.iconColor}`} />
-                </div>
-                <Badge variant="outline" className={`${mode.badgeColor} text-[10px] mx-auto mb-2 w-fit`}>
-                  {mode.badge}
-                </Badge>
-                <CardTitle className="text-xl text-card-foreground">{mode.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="relative text-center pb-8">
-                <CardDescription className="text-zinc-400 text-sm leading-relaxed mb-6">
-                  {mode.description}
-                </CardDescription>
-                <div className="flex items-center justify-center text-sm text-zinc-500 group-hover:text-white transition-colors">
-                  Play <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+        {ALL_MODES.map((mode) => {
+          const isDisabled = !isLoggedIn && mode.href !== "/games/oxford3000"
+          return (
+            <Link 
+              key={mode.href} 
+              href={isDisabled ? "#" : mode.href} 
+              className="group"
+              onClick={async (e) => {
+                if (isDisabled) {
+                  e.preventDefault()
+                  const ok = await showConfirm("คุณต้องเข้าสู่ระบบเพื่อเล่นโหมดนี้ ต้องการไปหน้าเข้าสู่ระบบหรือไม่?", { title: "แจ้งเตือนการเข้าถึง" })
+                  if (ok) {
+                    router.push("/login")
+                  }
+                }
+              }}
+            >
+              <Card className={`relative bg-card ${mode.borderColor} border-2 transition-all duration-300 h-full overflow-hidden ${isDisabled ? 'opacity-60 grayscale cursor-not-allowed' : 'group-hover:scale-[1.03] group-hover:shadow-2xl'}`}>
+                {!isDisabled && <div className={`absolute inset-0 bg-gradient-to-br ${mode.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />}
+                <CardHeader className="relative text-center pb-3 pt-8">
+                  {isDisabled && (
+                    <div className="absolute top-3 right-3 text-zinc-500">
+                      <Lock className="h-5 w-5" />
+                    </div>
+                  )}
+                  <div className={`mx-auto mb-4 p-4 rounded-2xl bg-muted/80 border border-border w-fit transition-transform duration-300 ${!isDisabled && 'group-hover:scale-110'}`}>
+                    <mode.icon className={`h-10 w-10 ${mode.iconColor}`} />
+                  </div>
+                  <Badge variant="outline" className={`${mode.badgeColor} text-[10px] mx-auto mb-2 w-fit`}>
+                    {mode.badge}
+                  </Badge>
+                  <CardTitle className="text-xl text-card-foreground">{mode.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="relative text-center pb-8">
+                  <CardDescription className="text-zinc-400 text-sm leading-relaxed mb-6">
+                    {mode.description}
+                  </CardDescription>
+                  <div className={`flex items-center justify-center text-sm transition-colors ${isDisabled ? 'text-zinc-500' : 'text-zinc-500 group-hover:text-white'}`}>
+                    {isDisabled ? "Locked" : "Play"} {!isDisabled && <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )
+        })}
       </div>
 
       <div className="max-w-5xl mx-auto px-4 pb-16">

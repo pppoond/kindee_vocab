@@ -178,6 +178,14 @@ export function LandingClient() {
             ใจฟูไปกับมินิเกมสุดจอย แฟลชการ์ดอัจฉริยะ และสถิติที่เห็นแล้วต้องร้องว้าว
           </p>
 
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <Link href="/games">
+              <Button size="lg" className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-8 h-14 text-lg font-bold gap-2 shadow-xl shadow-amber-500/20 hover:scale-105 transition-transform duration-300">
+                <Gamepad2 className="h-6 w-6" /> เข้าสู่มินิเกมเลย
+              </Button>
+            </Link>
+          </div>
+
           {/* Epic Battle Scene */}
           <div className="mt-16 relative mx-auto max-w-5xl h-[400px] md:h-[600px] flex items-center justify-center overflow-visible">
             {/* Background Glows */}

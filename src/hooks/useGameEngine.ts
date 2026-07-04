@@ -12,7 +12,7 @@ export type Vocabulary = {
   type: string
 }
 
-export type GameMode = "normal" | "fullvocab"
+export type GameMode = "normal" | "fullvocab" | "oxford3000"
 export type GameState = "playing" | "won" | "lost" | "leveling"
 export type CharacterState = "idle" | "attack" | "hurt" | "win" | "lose"
 
@@ -40,8 +40,11 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const playerHpRef = useRef(ASSETS.hero.maxHp)
   const correctCountRef = useRef(0)
   const wrongCountRef = useRef(0)
+  const levelCorrectCountRef = useRef(0)
+  const levelWrongCountRef = useRef(0)
   const timeLeftRef = useRef(15)
   const wrongAnswersRef = useRef<string[]>([])
+  const levelWrongAnswersRef = useRef<string[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const isSavedRef = useRef(false)
   const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, wrongWords: [] as any[], result: "lost" as "won" | "lost" | "finished" })
@@ -95,22 +98,39 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
 
   const loadGame = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      // Don't redirect here, let middleware handle it or wait for session sync
-      setLoading(false)
-      return
+    
+    let data;
+    let error;
+
+    if (mode === "oxford3000") {
+      const res = await supabase
+        .from("public_word_bank")
+        .select("id, word, meaning, type")
+        .eq("category", "oxford3000")
+        .limit(1000)
+      data = res.data
+      error = res.error
+    } else {
+      if (!user) {
+        const res = await supabase
+          .from("public_word_bank")
+          .select("id, word, meaning, type")
+          .limit(200)
+        data = res.data
+        error = res.error
+      } else {
+        const query = supabase
+          .from("vocabularies")
+          .select("id, word, meaning, type")
+
+        if (mode === "normal") {
+          query.eq("memorized", false)
+        }
+        const res = await query
+        data = res.data
+        error = res.error
+      }
     }
-
-    const query = supabase
-      .from("vocabularies")
-      .select("id, word, meaning, type")
-
-    // In normal mode, only use non-memorized words
-    if (mode === "normal") {
-      query.eq("memorized", false)
-    }
-
-    const { data, error } = await query
 
     if (error || !data || data.length === 0) {
       setLoading(false)
@@ -119,7 +139,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           ? "You need at least some non-memorized words to play! Add them in the dashboard."
           : "You need at least some words to play! Add them in the dashboard."
         if (onAlert) onAlert(msg)
-        router.push("/dashboard")
+        router.push(user ? "/dashboard" : "/")
       }
       return
     }
@@ -132,6 +152,11 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   }, [supabase, router, mode, setupTurn])
 
   const startNextLevel = useCallback((vocabList: Vocabulary[]) => {
+    levelCorrectCountRef.current = 0
+    levelWrongCountRef.current = 0
+    levelWrongAnswersRef.current = []
+    isSavedRef.current = false
+
     setLevel(prev => {
       const newLevel = prev + 1
       const stats = getEnemyStats(newLevel)
@@ -157,6 +182,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
 
     if (answer === currentWord?.meaning) {
       correctCountRef.current += 1
+      levelCorrectCountRef.current += 1
       setCorrectCount(correctCountRef.current)
       setFeedback({ type: "success", message: "Correct! You strike the beast!" })
       setHeroState("attack")
@@ -173,13 +199,17 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("win")
           setDemonState("lose")
 
-          // Update ref for potential unmount save
+          const finalLevelWrongWords = Array.from(new Set(levelWrongAnswersRef.current))
+          
+          saveSession("won", level, levelCorrectCountRef.current, levelWrongCountRef.current, finalLevelWrongWords)
+
+          // Update ref for potential unmount save for next level
           sessionDataRef.current = { 
-            level, 
-            correct: correctCountRef.current, 
-            wrong: wrongCountRef.current, 
-            wrongWords: Array.from(new Set(wrongAnswersRef.current)),
-            result: "won" 
+            level: level + 1, 
+            correct: 0, 
+            wrong: 0, 
+            wrongWords: [],
+            result: "lost" 
           }
 
           // Auto-advance after a short delay
@@ -196,8 +226,10 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
       }, 500)
     } else {
       wrongCountRef.current += 1
+      levelWrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)
       wrongAnswersRef.current.push(currentWord!.word)
+      levelWrongAnswersRef.current.push(currentWord!.word)
       setWrongAnswers(prev => [...prev, { word: currentWord!.word, meaning: currentWord!.meaning }])
       setFeedback({ type: "error", message: `Wrong! The correct meaning was: ${currentWord?.meaning}` })
       
@@ -212,15 +244,15 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("lose")
           setDemonState("win")
           
-          const finalWrongWords = Array.from(new Set(wrongAnswersRef.current))
+          const finalLevelWrongWords = Array.from(new Set(levelWrongAnswersRef.current))
           sessionDataRef.current = { 
             level, 
-            correct: correctCountRef.current, 
-            wrong: wrongCountRef.current, 
-            wrongWords: finalWrongWords,
+            correct: levelCorrectCountRef.current, 
+            wrong: levelWrongCountRef.current, 
+            wrongWords: finalLevelWrongWords,
             result: "lost" 
           }
-          saveSession("lost", level, correctCountRef.current, wrongCountRef.current, finalWrongWords)
+          saveSession("lost", level, levelCorrectCountRef.current, levelWrongCountRef.current, finalLevelWrongWords)
         } else {
           setHeroState("hurt")
           setTimeout(() => {
@@ -276,6 +308,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     playerHpRef.current = ASSETS.hero.maxHp
     correctCountRef.current = 0
     wrongCountRef.current = 0
+    levelCorrectCountRef.current = 0
+    levelWrongCountRef.current = 0
     setPlayerHp(ASSETS.hero.maxHp)
     setBeastHp(stats.maxHp)
     setBeastMaxHp(stats.maxHp)
@@ -291,6 +325,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     timeLeftRef.current = 15
     isSavedRef.current = false
     wrongAnswersRef.current = []
+    levelWrongAnswersRef.current = []
     sessionDataRef.current = { level: 1, correct: 0, wrong: 0, wrongWords: [], result: "lost" }
     loadGame()
   }, [loadGame])
