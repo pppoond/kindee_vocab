@@ -6,6 +6,11 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
+  },
   turbopack: {},
   poweredByHeader: false,
   async headers() {

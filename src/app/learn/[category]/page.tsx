@@ -3,9 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { VocabListClient } from './VocabListClient';
-import { Home, Menu } from 'lucide-react';
+import { Menu, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { NavigationMenu } from '@/components/navigation-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,21 +52,15 @@ export default async function LearnCategoryPage({
       {/* Navigation & Back Buttons */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b mb-8 shadow-sm">
         <div className="container mx-auto max-w-5xl px-4 py-3 md:px-8 flex justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Link href="/">
-              <Button variant="ghost" className="rounded-full gap-2 text-muted-foreground hover:text-primary">
-                <Home className="h-4 w-4" /> กลับหน้าแรก
-              </Button>
-            </Link>
-            <ThemeToggle />
-          </div>
+          <NavigationMenu />
 
           {/* Category Selector (Hamburger) */}
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full bg-white dark:bg-zinc-950 shadow-sm border-zinc-200 dark:border-zinc-800">
-                  <Menu className="h-5 w-5" />
+                <Button variant="outline" className="rounded-full bg-white dark:bg-zinc-950 shadow-sm border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
+                  <span className="hidden sm:inline">หมวดหมู่</span>
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[200px]">

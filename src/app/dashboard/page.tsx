@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw, Menu, Home } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,12 +23,20 @@ import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 import { AdBanner } from "@/components/ad-banner"
 
 import { getExampleSentences } from "@/lib/dictionary"
 import { PullToRefresh } from "@/components/pull-to-refresh"
-
+import { TicketModal } from "@/components/ticket-modal"
+import { LifeBuoy } from "lucide-react"
 
 type Vocabulary = {
   id: string
@@ -67,6 +75,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [open, setOpen] = useState(false)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false)
   const [editingWord, setEditingWord] = useState<Vocabulary | null>(null)
   const [formData, setFormData] = useState({ word: "", type: "", meaning: "", v2: "", v3: "", example: "" })
   const [saving, setSaving] = useState(false)
@@ -298,6 +308,7 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
+      <TicketModal open={isTicketModalOpen} onOpenChange={setIsTicketModalOpen} />
       <div className="min-h-screen bg-zinc-50 dark:bg-black">
         {/* Header */}
       <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-md dark:bg-black/80">
@@ -310,27 +321,39 @@ export default function Dashboard() {
               <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hidden sm:block">Kindee Vocab</h1>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/games">
-              <Button variant="outline" className="gap-2">
+          {/* Desktop Menu */}
+          <div className="hidden sm:flex items-center gap-4">
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/">
+                <Home className="h-4 w-4" />
+                <span>หน้าแรก</span>
+              </Link>
+            </Button>
+            
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/games">
                 <Gamepad2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Play Game</span>
-              </Button>
-            </Link>
+                <span>Play Game</span>
+              </Link>
+            </Button>
 
-            <Link href="/verb3">
-              <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/verb3">
                 <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline">Verb 3 Channels</span>
-              </Button>
-            </Link>
+                <span>Verb 3 Channels</span>
+              </Link>
+            </Button>
             
             {/* Profile & Support */}
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsTicketModalOpen(true)} className="gap-2 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400">
+                <LifeBuoy className="h-4 w-4" />
+                <span>แจ้งปัญหา</span>
+              </Button>
               <Button variant="outline" size="sm" className="bg-rose-50 dark:bg-zinc-900 border-rose-200 dark:border-zinc-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/20 hover:text-rose-700 dark:hover:text-rose-400 gap-2 shadow-[0_0_15px_rgba(225,29,72,0.1)] transition-colors" asChild>
                 <Link href="/donate">
                   <Heart className="h-4 w-4 fill-rose-500 animate-pulse" />
-                  <span className="hidden sm:inline">Support</span>
+                  <span>Support</span>
                 </Link>
               </Button>
               <ThemeToggle />
@@ -338,6 +361,50 @@ export default function Dashboard() {
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="flex sm:hidden items-center gap-2">
+            <ThemeToggle />
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full bg-white dark:bg-zinc-950 shadow-sm border-zinc-200 dark:border-zinc-800">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px]">
+                <SheetHeader>
+                  <SheetTitle className="text-left">เมนู</SheetTitle>
+                </SheetHeader>
+                <div className="grid gap-4 py-6 px-4">
+                  <Link href="/" className="flex items-center gap-2 text-lg font-medium hover:text-amber-500 transition-colors" onClick={() => setIsSheetOpen(false)}>
+                    <Home className="h-5 w-5" /> หน้าแรก
+                  </Link>
+                  <Link href="/games" className="flex items-center gap-2 text-lg font-medium hover:text-amber-500 transition-colors" onClick={() => setIsSheetOpen(false)}>
+                    <Gamepad2 className="h-5 w-5" /> Play Game
+                  </Link>
+                  <Link href="/verb3" className="flex items-center gap-2 text-lg font-medium hover:text-amber-500 transition-colors" onClick={() => setIsSheetOpen(false)}>
+                    <BookOpen className="h-5 w-5" /> Verb 3 Channels
+                  </Link>
+                  <Link href="/donate" className="flex items-center gap-2 text-lg font-medium hover:text-rose-500 transition-colors" onClick={() => setIsSheetOpen(false)}>
+                    <Heart className="h-5 w-5" /> Support
+                  </Link>
+                  <div className="my-2 border-b border-zinc-200 dark:border-zinc-800" />
+                  <button
+                    onClick={() => {
+                      setIsSheetOpen(false)
+                      setTimeout(() => setIsTicketModalOpen(true), 300)
+                    }}
+                    className="flex items-center gap-2 text-lg font-medium text-amber-600 dark:text-amber-500 text-left"
+                  >
+                    <LifeBuoy className="h-5 w-5" /> แจ้งปัญหา / Feedback
+                  </button>
+                  <button onClick={handleLogout} className="flex items-center gap-2 text-lg font-medium text-red-500 hover:text-red-600 transition-colors">
+                    <LogOut className="h-5 w-5" /> ออกจากระบบ
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
