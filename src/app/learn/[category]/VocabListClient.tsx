@@ -6,6 +6,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Plus, Check, Search, Volume2, Loader2 } from 'lucide-react'
 import { useAlert } from '@/components/alert-provider'
 import {
@@ -37,6 +44,7 @@ type Props = {
 export function VocabListClient({ words, category }: Props) {
   const [search, setSearch] = useState('')
   const [activeLetter, setActiveLetter] = useState<string | null>(null)
+  const [activeType, setActiveType] = useState<string>("all")
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set())
   const [addedWords, setAddedWords] = useState<Set<string>>(new Set())
@@ -83,8 +91,20 @@ export function VocabListClient({ words, category }: Props) {
       )
     }
 
+    if (activeType !== "all") {
+      result = result.filter(w => w.type === activeType)
+    }
+
     return result
-  }, [words, search, activeLetter])
+  }, [words, search, activeLetter, activeType])
+
+  const wordTypes = useMemo(() => {
+    const types = new Set<string>()
+    words.forEach(w => {
+      if (w.type) types.add(w.type)
+    })
+    return Array.from(types).sort()
+  }, [words])
 
   const ALPHABETS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
 
@@ -142,17 +162,38 @@ export function VocabListClient({ words, category }: Props) {
 
   return (
     <div>
-      <div className="relative mb-8 max-w-xl mx-auto">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input 
-          placeholder="ค้นหาคำศัพท์ หรือ ความหมาย..." 
-          className="pl-10 h-12 text-lg rounded-full"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            setPage(1)
-          }}
-        />
+      <div className="flex flex-col sm:flex-row gap-4 mb-8 max-w-2xl mx-auto px-4 sm:px-0">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+            placeholder="ค้นหาคำศัพท์ หรือ ความหมาย..." 
+            className="pl-10 h-12 text-lg rounded-full"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
+          />
+        </div>
+        <div className="w-full sm:w-[180px]">
+          <Select 
+            value={activeType} 
+            onValueChange={(val) => {
+              setActiveType(val)
+              setPage(1)
+            }}
+          >
+            <SelectTrigger className="h-12 rounded-full text-base bg-white dark:bg-zinc-950 px-4">
+              <SelectValue placeholder="ประเภทคำ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">ทุกประเภท</SelectItem>
+              {wordTypes.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="mb-8 pb-4">

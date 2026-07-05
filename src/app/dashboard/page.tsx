@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +23,12 @@ import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAlert } from "@/components/alert-provider"
 import { Loading } from "@/components/ui/loading"
-import { Loader2 } from "lucide-react"
+
 import { AdBanner } from "@/components/ad-banner"
 
 import { getExampleSentences } from "@/lib/dictionary"
+import { PullToRefresh } from "@/components/pull-to-refresh"
+
 
 type Vocabulary = {
   id: string
@@ -79,6 +81,15 @@ export default function Dashboard() {
   // New states for example sentences
   const [apiExamples, setApiExamples] = useState<Record<string, string[]>>({})
   const [exampleLoading, setExampleLoading] = useState<Record<string, boolean>>({})
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      fetchVocabularies(1, searchQuery, filterType, filterMemorized),
+      fetchDailyStats(),
+    ])
+    const { data: tags } = await supabase.from('public_tags').select('name').order('name')
+    if (tags) setPublicTags(tags)
+  }
   
   const supabase = createClient()
   const router = useRouter()
@@ -286,8 +297,9 @@ export default function Dashboard() {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Header */}
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+        {/* Header */}
       <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-md dark:bg-black/80">
         <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
           <div className="flex items-center gap-3">
@@ -726,5 +738,6 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
+    </PullToRefresh>
   )
 }
