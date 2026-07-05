@@ -37,7 +37,6 @@ export default function LoginPage() {
       router.push("/dashboard")
     } catch (err: any) {
       setError(err.message)
-    } finally {
       setLoading(false)
     }
   }

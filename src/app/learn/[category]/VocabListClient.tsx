@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Check, Search, Volume2 } from 'lucide-react'
+import { Plus, Check, Search, Volume2, Loader2 } from 'lucide-react'
 import { useAlert } from '@/components/alert-provider'
 import {
   Dialog,
@@ -39,7 +39,7 @@ export function VocabListClient({ words, category }: Props) {
   const [activeLetter, setActiveLetter] = useState<string | null>(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set())
-  const [addedIds, setAddedIds] = useState<Set<string>>(new Set())
+  const [addedWords, setAddedWords] = useState<Set<string>>(new Set())
   const [userId, setUserId] = useState<string | null>(null)
   
   const [page, setPage] = useState(1)
@@ -53,6 +53,16 @@ export function VocabListClient({ words, category }: Props) {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUserId(session.user.id)
+        
+        // Fetch existing user vocabularies
+        const { data: userVocab } = await supabase
+          .from('vocabularies')
+          .select('word')
+          .eq('user_id', session.user.id)
+          
+        if (userVocab) {
+          setAddedWords(new Set(userVocab.map((v: any) => v.word.toLowerCase())))
+        }
       }
     }
     checkUser()
@@ -117,7 +127,7 @@ export function VocabListClient({ words, category }: Props) {
         console.error('Error adding word:', error)
         showAlert('เกิดข้อผิดพลาดในการเพิ่มคำศัพท์', { type: 'error' })
       } else {
-        setAddedIds(prev => new Set(prev).add(word.id))
+        setAddedWords(prev => new Set(prev).add(word.word.toLowerCase()))
         showAlert('เพิ่มเข้าคลังคำศัพท์แล้ว!', { type: 'success' })
       }
     } catch (err) {
@@ -184,7 +194,10 @@ export function VocabListClient({ words, category }: Props) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {paginatedWords.map((word) => (
+        {paginatedWords.map((word) => {
+          const isAdded = addedWords.has(word.word.toLowerCase())
+
+          return (
           <Card key={word.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-2">
@@ -213,17 +226,19 @@ export function VocabListClient({ words, category }: Props) {
 
                   <Button 
                     size="icon" 
-                    variant={addedIds.has(word.id) ? "outline" : "default"}
+                    variant={isAdded ? "outline" : "default"}
                     className={`rounded-full h-8 w-8 transition-all ${
-                      addedIds.has(word.id) 
+                      isAdded 
                         ? "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 opacity-100" 
                         : "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white shadow-sm shadow-amber-500/20 border-none"
                     }`}
                     onClick={() => handleAddWord(word)}
-                    disabled={addingIds.has(word.id) || addedIds.has(word.id)}
-                    title="เพิ่มเข้าคลัง"
+                    disabled={addingIds.has(word.id) || isAdded}
+                    title={isAdded ? "เพิ่มแล้ว" : "เพิ่มเข้าคลัง"}
                   >
-                    {addedIds.has(word.id) ? (
+                    {addingIds.has(word.id) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isAdded ? (
                       <Check className="h-4 w-4" />
                     ) : (
                       <Plus className="h-4 w-4" />
@@ -239,7 +254,7 @@ export function VocabListClient({ words, category }: Props) {
               )}
             </CardContent>
           </Card>
-        ))}
+        )})}
       </div>
 
       {filteredWords.length === 0 && (

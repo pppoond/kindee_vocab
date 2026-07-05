@@ -95,36 +95,50 @@ export default async function LearnCategoryPage({
   );
 }
 
+import { unstable_cache } from 'next/cache';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const getCachedVocab = unstable_cache(
+  async (category: string) => {
+    // Use standard client without cookies for cached public data
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    let allWords: any[] = [];
+    let from = 0;
+    const limit = 1000;
+    
+    while (true) {
+      const { data, error } = await supabase
+        .from('public_word_bank')
+        .select('*')
+        .eq('category', category)
+        .order('word', { ascending: true })
+        .range(from, from + limit - 1);
+
+      if (error) {
+        console.error("Error fetching public words:", error);
+        break;
+      }
+
+      if (data) {
+        allWords = [...allWords, ...data];
+        if (data.length < limit) break;
+      } else {
+        break;
+      }
+      from += limit;
+    }
+    return allWords;
+  },
+  ['vocab-list-cache'],
+  { revalidate: 600, tags: ['vocab'] } // 600 seconds = 10 minutes
+);
+
 // Server Component for fetching vocabulary asynchronously
 async function VocabFetcher({ category }: { category: string }) {
-  const supabase = await createClient();
-  
-  // Fetch words for this category (handling Supabase's 1000 row limit)
-  let allWords: any[] = [];
-  let from = 0;
-  const limit = 1000;
-  
-  while (true) {
-    const { data, error } = await supabase
-      .from('public_word_bank')
-      .select('*')
-      .eq('category', category)
-      .order('word', { ascending: true })
-      .range(from, from + limit - 1);
-
-    if (error) {
-      console.error("Error fetching public words:", error);
-      break;
-    }
-
-    if (data) {
-      allWords = [...allWords, ...data];
-      if (data.length < limit) break;
-    } else {
-      break;
-    }
-    from += limit;
-  }
-
+  const allWords = await getCachedVocab(category);
   return <VocabListClient words={allWords || []} category={category} />;
 }
+
