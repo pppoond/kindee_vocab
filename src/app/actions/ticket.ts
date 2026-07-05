@@ -70,3 +70,64 @@ export async function submitTicket(formData: FormData) {
 
   return { success: true }
 }
+
+export async function resolveTicket(ticketId: string) {
+  const supabase = await createClient()
+  
+  // Verify auth
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  // Check if admin (though RLS handles it, it's good to be safe)
+  const { error: updateError } = await supabase
+    .from('tickets')
+    .update({ status: 'resolved' })
+    .eq('id', ticketId)
+
+  if (updateError) {
+    console.error('Resolve Error:', updateError)
+    return { error: 'Failed to resolve ticket' }
+  }
+
+  return { success: true }
+}
+
+export async function deleteTicket(ticketId: string, imageUrl?: string | null) {
+  const supabase = await createClient()
+  
+  // Verify auth
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  // If there's an image, delete it from storage first
+  if (imageUrl) {
+    // Extract filename from URL (e.g. https://.../kindee-vocab/tickets/filename.png)
+    const urlParts = imageUrl.split('/')
+    // the last part is filename, the part before is 'tickets'
+    const fileName = urlParts.pop()
+    if (fileName) {
+      const { error: storageError } = await supabase
+        .storage
+        .from('kindee-vocab')
+        .remove([`tickets/${fileName}`])
+        
+      if (storageError) {
+        console.error('Failed to delete image:', storageError)
+        // We still continue to delete the ticket itself
+      }
+    }
+  }
+
+  // Delete ticket (RLS will enforce admin check)
+  const { error: deleteError } = await supabase
+    .from('tickets')
+    .delete()
+    .eq('id', ticketId)
+
+  if (deleteError) {
+    console.error('Delete Error:', deleteError)
+    return { error: 'Failed to delete ticket' }
+  }
+
+  return { success: true }
+}

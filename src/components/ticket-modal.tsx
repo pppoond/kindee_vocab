@@ -130,23 +130,31 @@ export function TicketModal({ open, onOpenChange }: TicketModalProps) {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="title">หัวข้อ</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="title">หัวข้อ</Label>
+                <span className="text-xs text-muted-foreground">{title.length}/100</span>
+              </div>
               <Input 
                 id="title" 
                 placeholder="อธิบายสั้นๆ เช่น ล็อกอินไม่ได้, รูปไม่ขึ้น" 
                 value={title}
+                maxLength={100}
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="description">รายละเอียดเพิ่มเติม</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description">รายละเอียดเพิ่มเติม</Label>
+                <span className="text-xs text-muted-foreground">{description.length}/255</span>
+              </div>
               <Textarea 
                 id="description" 
                 placeholder="อธิบายปัญหาที่คุณพบอย่างละเอียด..." 
                 rows={4}
                 value={description}
+                maxLength={255}
                 onChange={(e) => setDescription(e.target.value)}
                 required
               />

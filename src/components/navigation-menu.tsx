@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { Menu, Home, LifeBuoy, X, LayoutDashboard, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,26 @@ import {
 export function NavigationMenu() {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from("user_settings")
+          .select("role")
+          .eq("user_id", user.id)
+          .single()
+        
+        if (data?.role === 'admin') {
+          setIsAdmin(true)
+        }
+      }
+    }
+    checkAdmin()
+  }, [])
   
   return (
     <>
@@ -56,6 +77,13 @@ export function NavigationMenu() {
                   <Heart className="mr-2 h-4 w-4" /> Support
                 </Link>
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link href="/backoffice" className="w-full cursor-pointer text-amber-600 dark:text-amber-500">
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Backoffice
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={() => setIsTicketModalOpen(true)}
@@ -96,6 +124,16 @@ export function NavigationMenu() {
                   <Heart className="h-5 w-5" />
                   Support
                 </Link>
+                {isAdmin && (
+                  <Link 
+                    href="/backoffice" 
+                    className="flex items-center gap-2 text-lg font-medium text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors"
+                    onClick={() => setIsSheetOpen(false)}
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    Backoffice
+                  </Link>
+                )}
                 <div className="my-2 border-b border-zinc-200 dark:border-zinc-800" />
                 <button
                   onClick={() => {

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw, Menu, Home } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw, Menu, Home, LayoutDashboard } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,6 +74,7 @@ export default function Dashboard() {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [open, setOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false)
@@ -206,6 +207,10 @@ export default function Dashboard() {
         return
       }
       setUser(user)
+      
+      const { data: userSettings } = await supabase.from("user_settings").select("role").eq("user_id", user.id).single()
+      if (userSettings?.role === 'admin') setIsAdmin(true)
+      
       fetchVocabularies(currentPage)
       fetchDailyStats()
 
@@ -213,7 +218,7 @@ export default function Dashboard() {
       if (tags) setPublicTags(tags)
     }
     getUser()
-  }, [currentPage, fetchVocabularies, fetchDailyStats, router, supabase.auth, supabase])
+  }, [currentPage, fetchVocabularies, fetchDailyStats, router, supabase])
 
   const handleOpenAdd = () => {
     setEditingWord(null)
@@ -330,6 +335,15 @@ export default function Dashboard() {
               </Link>
             </Button>
             
+            {isAdmin && (
+              <Button variant="outline" className="gap-2 text-amber-600 dark:text-amber-500 hover:text-amber-700" asChild>
+                <Link href="/backoffice">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Backoffice</span>
+                </Link>
+              </Button>
+            )}
+            
             <Button variant="outline" className="gap-2" asChild>
               <Link href="/games">
                 <Gamepad2 className="h-4 w-4" />
@@ -380,6 +394,11 @@ export default function Dashboard() {
                   <Link href="/" className="flex items-center gap-2 text-lg font-medium hover:text-amber-500 transition-colors" onClick={() => setIsSheetOpen(false)}>
                     <Home className="h-5 w-5" /> หน้าแรก
                   </Link>
+                  {isAdmin && (
+                    <Link href="/backoffice" className="flex items-center gap-2 text-lg font-medium text-amber-600 hover:text-amber-700 transition-colors" onClick={() => setIsSheetOpen(false)}>
+                      <LayoutDashboard className="h-5 w-5" /> Backoffice
+                    </Link>
+                  )}
                   <Link href="/games" className="flex items-center gap-2 text-lg font-medium hover:text-amber-500 transition-colors" onClick={() => setIsSheetOpen(false)}>
                     <Gamepad2 className="h-5 w-5" /> Play Game
                   </Link>
