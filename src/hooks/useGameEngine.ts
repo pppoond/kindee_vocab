@@ -47,7 +47,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const levelWrongAnswersRef = useRef<string[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const isSavedRef = useRef(false)
-  const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, wrongWords: [] as any[], result: "lost" as "won" | "lost" | "finished" })
+  const sessionIdRef = useRef<string | null>(null)
+  const sessionDataRef = useRef({ level: 1, correct: 0, wrong: 0, wrongWords: [] as any[], result: "playing" as "won" | "lost" | "finished" | "playing" })
 
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
@@ -72,27 +73,43 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     timeLeftRef.current = calculatedMaxTime
   }, [])
 
-  const saveSession = useCallback(async (result: "won" | "lost" | "finished", finalLevel: number, correct: number, wrong: number, wrongWords: any[] = []) => {
-    if (isSavedRef.current) return
-    isSavedRef.current = true
-
+  const saveSession = useCallback(async (result: "won" | "lost" | "finished" | "playing", finalLevel: number, correct: number, wrong: number, wrongWords: any[] = []) => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    console.log("Saving session (Batched):", { result, finalLevel, correct, wrong, wrongWords })
-    const { error } = await supabase.from("game_sessions").insert([{
-      user_id: user.id,
-      mode,
-      level: finalLevel,
-      result,
-      correct_count: correct,
-      wrong_count: wrong,
-      wrong_words: wrongWords,
-    }])
+    console.log("Saving session (Batched):", { result, finalLevel, correct, wrong, wrongWords, sessionId: sessionIdRef.current })
+    
+    if (sessionIdRef.current) {
+      const { error } = await supabase.from("game_sessions").update({
+        level: finalLevel,
+        result,
+        correct_count: correct,
+        wrong_count: wrong,
+        wrong_words: wrongWords,
+      }).eq("id", sessionIdRef.current)
 
-    if (error) {
-      console.error("Error saving session:", error)
-      if (onAlert) onAlert("Failed to save session statistics.")
+      if (error) {
+        console.error("Error updating session:", error)
+        if (onAlert) onAlert("Failed to update session statistics.")
+      }
+    } else {
+      const { data, error } = await supabase.from("game_sessions").insert([{
+        user_id: user.id,
+        mode,
+        level: finalLevel,
+        result,
+        correct_count: correct,
+        wrong_count: wrong,
+        wrong_words: wrongWords,
+      }]).select().single()
+
+      if (data) {
+        sessionIdRef.current = data.id
+      }
+      if (error) {
+        console.error("Error saving session:", error)
+        if (onAlert) onAlert("Failed to save session statistics.")
+      }
     }
   }, [supabase, mode])
 
@@ -149,7 +166,10 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setVocabularies(data)
     setupTurn(data, 1) // Initial level is 1
     setLoading(false)
-  }, [supabase, router, mode, setupTurn])
+    
+    // Insert initial session immediately on game start
+    saveSession("playing", 1, 0, 0, [])
+  }, [supabase, router, mode, setupTurn, saveSession])
 
   const startNextLevel = useCallback((vocabList: Vocabulary[]) => {
     levelCorrectCountRef.current = 0
@@ -199,18 +219,17 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("win")
           setDemonState("lose")
 
-          const finalLevelWrongWords = Array.from(new Set(levelWrongAnswersRef.current))
-          
-          saveSession("won", level, levelCorrectCountRef.current, levelWrongCountRef.current, finalLevelWrongWords)
-
           // Update ref for potential unmount save for next level
+          // We DO NOT saveSession here anymore to avoid inserting a row per level won.
+          // We only track the cumulative stats until the game ends (player loses or unmounts).
           sessionDataRef.current = { 
             level: level + 1, 
-            correct: 0, 
-            wrong: 0, 
-            wrongWords: [],
-            result: "lost" 
+            correct: correctCountRef.current, 
+            wrong: wrongCountRef.current, 
+            wrongWords: Array.from(new Set(wrongAnswersRef.current)),
+            result: "finished" 
           }
+          saveSession("finished", level, correctCountRef.current, wrongCountRef.current, Array.from(new Set(wrongAnswersRef.current)))
 
           // Auto-advance after a short delay
           setTimeout(() => {
@@ -244,15 +263,15 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("lose")
           setDemonState("win")
           
-          const finalLevelWrongWords = Array.from(new Set(levelWrongAnswersRef.current))
+          const finalWrongWords = Array.from(new Set(wrongAnswersRef.current))
           sessionDataRef.current = { 
             level, 
-            correct: levelCorrectCountRef.current, 
-            wrong: levelWrongCountRef.current, 
-            wrongWords: finalLevelWrongWords,
+            correct: correctCountRef.current, 
+            wrong: wrongCountRef.current, 
+            wrongWords: finalWrongWords,
             result: "lost" 
           }
-          saveSession("lost", level, levelCorrectCountRef.current, levelWrongCountRef.current, finalLevelWrongWords)
+          saveSession("lost", level, correctCountRef.current, wrongCountRef.current, finalWrongWords)
         } else {
           setHeroState("hurt")
           setTimeout(() => {
@@ -292,11 +311,11 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   // Save on cleanup if not saved yet (e.g., user leaves early)
   useEffect(() => {
     return () => {
-      if (!isSavedRef.current && correctCountRef.current > 0) {
-        // We use a small hack for cleanup save: using a sync check but the save itself is async.
-        // For Supabase, we can't easily wait for unmount, but this triggers the request.
-        const { result, level: finalLevel, correct, wrong, wrongWords } = sessionDataRef.current
-        saveSession(result, finalLevel, correct, wrong, wrongWords)
+      // Ensure the final state is saved on unmount if a session exists
+      if (sessionIdRef.current) {
+        const { result, level: finalLevel } = sessionDataRef.current
+        const finalWrongWords = Array.from(new Set(wrongAnswersRef.current))
+        saveSession(result, finalLevel, correctCountRef.current, wrongCountRef.current, finalWrongWords)
       }
     }
   }, [saveSession])
@@ -324,9 +343,10 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setMaxTime(15)
     timeLeftRef.current = 15
     isSavedRef.current = false
+    sessionIdRef.current = null
     wrongAnswersRef.current = []
     levelWrongAnswersRef.current = []
-    sessionDataRef.current = { level: 1, correct: 0, wrong: 0, wrongWords: [], result: "lost" }
+    sessionDataRef.current = { level: 1, correct: 0, wrong: 0, wrongWords: [], result: "playing" }
     loadGame()
   }, [loadGame])
 
