@@ -346,7 +346,7 @@ export function LandingClient() {
             <div className="flex gap-8 text-sm text-zinc-500">
                <Link href="/learn/oxford3000" className="hover:text-amber-500 underline-offset-4 hover:underline">คลังศัพท์ 3000 คำ</Link>
                <Link href="/games" className="hover:text-amber-500 underline-offset-4 hover:underline">มินิเกมสุดจอย</Link>
-               <Link href="/verb3" className="hover:text-amber-500 underline-offset-4 hover:underline">กริยา 3 ช่อง</Link>
+               <Link href="/learn/irregular-verbs" className="hover:text-amber-500 underline-offset-4 hover:underline">กริยา 3 ช่อง</Link>
                <Link href="/donate" className="hover:text-rose-500 underline-offset-4 hover:underline">ซัพพอร์ตเรา</Link>
             </div>
           </div>
