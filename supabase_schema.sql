@@ -56,3 +56,7 @@ CREATE POLICY "Users can view their own game_sessions"
 CREATE POLICY "Users can insert their own game_sessions"
   ON game_sessions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own game_sessions"
+  ON game_sessions FOR UPDATE
+  USING (auth.uid() = user_id);

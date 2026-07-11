@@ -3,16 +3,31 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { VocabListClient } from './VocabListClient';
-import { Menu, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { CategoryDropdown } from './CategoryDropdown';
 import { NavigationMenu } from '@/components/navigation-menu';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Suspense } from 'react';
+
+function getCategoryInfo(category: string) {
+  const cat = category.toLowerCase();
+  if (cat === 'oxford3000') {
+    return {
+      displayCategory: 'Oxford 3000',
+      seoDescription: 'เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวด Oxford 3000 ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab',
+      pageDescription: 'คำศัพท์ภาษาอังกฤษหมวด Oxford 3000 ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ'
+    };
+  } else if (cat === 'irregular-verbs') {
+    return {
+      displayCategory: 'Irregular Verbs (กริยา 3 ช่อง)',
+      seoDescription: 'เรียนรู้และท่องกริยา 3 ช่องภาษาอังกฤษ (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab',
+      pageDescription: 'รวบรวมคำกริยา 3 ช่อง (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และช่องที่ 1 ให้คุณท่องจำและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ'
+    };
+  }
+  return {
+    displayCategory: category,
+    seoDescription: `เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวด ${category} ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab`,
+    pageDescription: `คำศัพท์ภาษาอังกฤษหมวด ${category} ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ`
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -22,13 +37,12 @@ export async function generateMetadata({
   const resolvedParams = await params;
   const category = resolvedParams.category;
 
-  // Format category name for display (e.g. oxford3000 -> Oxford 3000)
-  const displayCategory = category.toLowerCase() === 'oxford3000' ? 'Oxford 3000' : category;
+  const { displayCategory, seoDescription } = getCategoryInfo(category);
 
   return {
     title: `คำศัพท์หมวด ${displayCategory} พร้อมความหมายภาษาไทย`,
-    description: `เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวด ${displayCategory} ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab`,
-    keywords: [displayCategory, "คำศัพท์ภาษาอังกฤษ", "ท่องศัพท์", "คำศัพท์", "vocabulary", "เรียนภาษาอังกฤษ"],
+    description: seoDescription,
+    keywords: [displayCategory, "คำศัพท์ภาษาอังกฤษ", "ท่องศัพท์", "คำศัพท์", "vocabulary", "เรียนภาษาอังกฤษ", "กริยา 3 ช่อง", "oxford3000", "คำศัพท์ oxford 3000"],
   };
 }
 
@@ -45,7 +59,13 @@ export default async function LearnCategoryPage({
   // Fetch all tags dynamically
   const { data: tags } = await supabase.from('public_tags').select('name').order('name');
 
-  const displayCategory = category.toLowerCase() === 'oxford3000' ? 'Oxford 3000' : category;
+  const categoryExists = tags?.some((t: any) => t.name.toLowerCase() === category.toLowerCase());
+  
+  if (!categoryExists) {
+    notFound();
+  }
+
+  const { displayCategory, pageDescription } = getCategoryInfo(category);
 
   return (
     <div className="min-h-screen">
@@ -56,26 +76,7 @@ export default async function LearnCategoryPage({
 
           {/* Category Selector (Hamburger) */}
           <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-full bg-white dark:bg-zinc-950 shadow-sm border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
-                  <span className="hidden sm:inline">หมวดหมู่</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                {tags?.map((t: any) => (
-                  <DropdownMenuItem key={t.name} asChild>
-                    <Link 
-                      href={`/learn/${t.name}`}
-                      className={`capitalize w-full cursor-pointer ${category.toLowerCase() === t.name.toLowerCase() ? "font-bold text-amber-500" : ""}`}
-                    >
-                      {t.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <CategoryDropdown tags={tags || []} category={category} />
           </div>
         </div>
       </header>
@@ -86,7 +87,7 @@ export default async function LearnCategoryPage({
             คลังคำศัพท์ {displayCategory}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            คำศัพท์ภาษาอังกฤษหมวด {displayCategory} ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ
+            {pageDescription}
           </p>
         </div>
 

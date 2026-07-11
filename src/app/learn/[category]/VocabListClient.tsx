@@ -252,6 +252,26 @@ export function VocabListClient({ words, category }: Props) {
                     )}
                   </h3>
                   <p className="text-muted-foreground font-medium mt-1 text-sm">{word.meaning}</p>
+                  {(word.v2 || word.v3) && (
+                    <div className="flex flex-wrap gap-2 mt-2 text-xs font-mono text-zinc-500">
+                      {word.v2 && (
+                        <div className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded flex items-center gap-1.5">
+                          <span>v2: <span className="text-primary font-semibold">{word.v2}</span></span>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); speakWord(word.v2 as string); }} className="text-zinc-400 hover:text-primary transition-colors cursor-pointer" title="อ่านออกเสียง">
+                            <Volume2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      {word.v3 && (
+                        <div className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded flex items-center gap-1.5">
+                          <span>v3: <span className="text-violet-500 font-semibold">{word.v3}</span></span>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); speakWord(word.v3 as string); }} className="text-zinc-400 hover:text-violet-500 transition-colors cursor-pointer" title="อ่านออกเสียง">
+                            <Volume2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-1.5 shrink-0">

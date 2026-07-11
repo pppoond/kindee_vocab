@@ -93,7 +93,19 @@ const OXFORD_MODE = {
   badgeColor: "border-blue-500/50 text-blue-400",
 }
 
-const ALL_MODES = [OXFORD_MODE, ...GAME_MODES]
+const PUBLIC_VERB_MODE = {
+  title: "Public Verb Writing",
+  description: "ท้าทายความจำกริยา 3 ช่อง จากคลังศัพท์สาธารณะ! (เปิดให้เล่นฟรีสำหรับทุกคน)",
+  href: "/games/public-verb-writing",
+  icon: Pencil,
+  color: "from-emerald-500/20 to-teal-500/20",
+  borderColor: "border-emerald-500/30 hover:border-emerald-500/60",
+  iconColor: "text-emerald-400",
+  badge: "PUBLIC",
+  badgeColor: "border-emerald-500/50 text-emerald-400",
+}
+
+const ALL_MODES = [PUBLIC_VERB_MODE, OXFORD_MODE, ...GAME_MODES]
 
 export default function GamesPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -130,7 +142,7 @@ export default function GamesPage() {
       {/* Game Mode Cards */}
       <div className="max-w-5xl mx-auto px-4 pb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {ALL_MODES.map((mode) => {
-          const isDisabled = !isLoggedIn && mode.href !== "/games/oxford3000"
+          const isDisabled = !isLoggedIn && mode.badge !== "PUBLIC"
           return (
             <Link 
               key={mode.href} 
