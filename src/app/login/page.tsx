@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAlert } from "@/components/alert-provider"
-import { Loader2 } from "lucide-react"
+import { Loader2, ArrowLeft } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function LoginPage() {
@@ -43,6 +43,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-black relative">
+      <div className="absolute top-4 left-4">
+        <Button variant="ghost" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100" asChild>
+          <Link href="/">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            กลับหน้าแรก
+          </Link>
+        </Button>
+      </div>
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
