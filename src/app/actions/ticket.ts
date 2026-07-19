@@ -96,20 +96,20 @@ export async function submitTicket(formData: FormData) {
       }
 
       if (botToken && targetChatId) {
-        const message = `🎫 <b>New Ticket: ${title}</b>\n\n<b>Type:</b> ${type}\n<b>User ID:</b> ${user.id}\n\n<b>Description:</b>\n${description}`
+        let message = `🎫 <b>New Ticket: ${title}</b>\n\n<b>Type:</b> ${type}\n<b>User ID:</b> ${user.id}\n\n<b>Description:</b>\n${description}`
         
-        const endpoint = imageUrl 
-          ? `https://api.telegram.org/bot${botToken.trim()}/sendPhoto` 
-          : `https://api.telegram.org/bot${botToken.trim()}/sendMessage`
-        
-        const body = imageUrl
-          ? { chat_id: targetChatId.trim(), photo: imageUrl, caption: message, parse_mode: 'HTML' }
-          : { chat_id: targetChatId.trim(), text: message, parse_mode: 'HTML' }
+        if (imageUrl) {
+          message += `\n\n<a href="${imageUrl}">📷 View Attached Image</a>`
+        }
 
-        fetch(endpoint, {
+        fetch(`https://api.telegram.org/bot${botToken.trim()}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+          body: JSON.stringify({
+            chat_id: targetChatId.trim(),
+            text: message,
+            parse_mode: 'HTML'
+          })
         }).catch(err => console.error('Telegram API Error:', err))
       } else {
         console.warn('Telegram notification skipped: Missing chat_id. Add "telegram_chat_id" to system_settings.')
