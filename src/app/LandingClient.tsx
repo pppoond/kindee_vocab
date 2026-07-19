@@ -49,7 +49,7 @@ export function LandingClient() {
             <Link href="#features" className="hover:text-amber-500 transition-colors">ฟีเจอร์</Link>
             <Link href="/learn/oxford3000" className="hover:text-amber-500 transition-colors">คลังศัพท์ 3000 คำ</Link>
             <Link href="/games" className="hover:text-amber-500 transition-colors">Games</Link>
-            <Link href="/verb3" className="hover:text-amber-500 transition-colors">กริยา 3 ช่อง</Link>
+            <Link href="/learn/irregular-verbs" className="hover:text-amber-500 transition-colors">กริยา 3 ช่อง</Link>
             <Link href="/donate" className="hover:text-rose-500 transition-colors flex items-center gap-1.5">
               <Heart className="h-4 w-4 fill-rose-500" /> สนับสนุน
             </Link>

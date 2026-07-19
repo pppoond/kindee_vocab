@@ -83,8 +83,12 @@ def main():
                 print(f"[{i+1}/{limit}] Skipped: {word} (Already exists)")
                 continue
 
-            # 1. Translate meaning
-            meaning_th = translator.translate(word)
+            # 1. Translate meaning with trick to force verb translation
+            translated = translator.translate('to ' + word)
+            prefixes = ['ที่จะ', 'เพื่อ', 'การ']
+            for prefix in prefixes:
+                translated = translated.replace(prefix, '')
+            meaning_th = translated.strip()
             
             # 2. Insert into Supabase
             data = {

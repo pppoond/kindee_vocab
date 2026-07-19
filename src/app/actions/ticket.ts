@@ -68,6 +68,57 @@ export async function submitTicket(formData: FormData) {
     return { error: 'Failed to submit ticket' }
   }
 
+  // --- Send Telegram Notification ---
+  try {
+    const { data: tokenSetting } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'telegram_notify_token')
+      .single()
+
+    const { data: chatIdSetting } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'telegram_chat_id')
+      .single()
+
+    const telegramToken = tokenSetting?.value
+    
+    if (telegramToken) {
+      let botToken = telegramToken
+      let targetChatId = chatIdSetting?.value
+
+      // Optional: Support "BOT_TOKEN|CHAT_ID" format in single token field
+      if (telegramToken.includes('|')) {
+        [botToken, targetChatId] = telegramToken.split('|')
+      } else if (telegramToken.includes(',')) {
+        [botToken, targetChatId] = telegramToken.split(',')
+      }
+
+      if (botToken && targetChatId) {
+        const message = `🎫 <b>New Ticket: ${title}</b>\n\n<b>Type:</b> ${type}\n<b>User ID:</b> ${user.id}\n\n<b>Description:</b>\n${description}`
+        
+        const endpoint = imageUrl 
+          ? `https://api.telegram.org/bot${botToken.trim()}/sendPhoto` 
+          : `https://api.telegram.org/bot${botToken.trim()}/sendMessage`
+        
+        const body = imageUrl
+          ? { chat_id: targetChatId.trim(), photo: imageUrl, caption: message, parse_mode: 'HTML' }
+          : { chat_id: targetChatId.trim(), text: message, parse_mode: 'HTML' }
+
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        }).catch(err => console.error('Telegram API Error:', err))
+      } else {
+        console.warn('Telegram notification skipped: Missing chat_id. Add "telegram_chat_id" to system_settings.')
+      }
+    }
+  } catch (err) {
+    console.error('Error processing Telegram notification:', err)
+  }
+
   return { success: true }
 }
 
