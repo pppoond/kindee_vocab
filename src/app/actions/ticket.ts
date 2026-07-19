@@ -43,8 +43,7 @@ export async function submitTicket(formData: FormData) {
       console.error('Upload Error:', uploadError)
       return { error: 'Failed to upload image' }
     }
-    
-    // Get public URL
+
     const { data: { publicUrl } } = supabase
       .storage
       .from('kindee-vocab')
@@ -88,7 +87,6 @@ export async function submitTicket(formData: FormData) {
       let botToken = telegramToken
       let targetChatId = chatIdSetting?.value
 
-      // Optional: Support "BOT_TOKEN|CHAT_ID" format in single token field
       if (telegramToken.includes('|')) {
         [botToken, targetChatId] = telegramToken.split('|')
       } else if (telegramToken.includes(',')) {
