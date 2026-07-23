@@ -21,6 +21,12 @@ function getCategoryInfo(category: string) {
       seoDescription: 'เรียนรู้และท่องกริยา 3 ช่องภาษาอังกฤษ (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab',
       pageDescription: 'รวบรวมคำกริยา 3 ช่อง (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และช่องที่ 1 ให้คุณท่องจำและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ'
     };
+  } else if (cat === 'business') {
+    return {
+      displayCategory: 'Business (หมวดธุรกิจ)',
+      seoDescription: 'เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวดธุรกิจ (Business) ที่ใช้บ่อยในการทำงานและการบริหารงาน พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค',
+      pageDescription: 'รวบรวมคำศัพท์ภาษาอังกฤษหมวดธุรกิจและการทำงาน (Business English) ที่ใช้บ่อยในการทำงานจริง ให้คุณเรียนรู้และทบทวนได้ง่ายๆ'
+    };
   }
   return {
     displayCategory: category,
