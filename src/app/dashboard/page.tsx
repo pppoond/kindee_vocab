@@ -674,7 +674,7 @@ export default function Dashboard() {
             <>
               <div className="grid gap-4">
                 {vocabularies.map((v) => (
-                  <Card key={v.id} className={`transition-all ${v.memorized ? 'opacity-60 grayscale' : 'hover:border-primary/50 shadow-sm'}`}>
+                  <Card key={v.id} className={`transition-all ${v.memorized ? 'opacity-75 bg-zinc-50/50 dark:bg-zinc-900/20' : 'hover:border-primary/50 shadow-sm'}`}>
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <div className="flex flex-col gap-2 flex-1">
                         <div className="flex items-center gap-3 flex-wrap">
@@ -686,7 +686,7 @@ export default function Dashboard() {
                               </span>
                             )}
                           </CardTitle>
-                          {v.memorized && <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100 border-none text-[10px] h-5 px-1.5">Memorized</Badge>}
+                          {v.memorized && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 border-none text-[10px] h-5 px-1.5">Memorized</Badge>}
                         </div>
                         
                         <div className="flex items-center gap-4">
@@ -698,21 +698,16 @@ export default function Dashboard() {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className={`h-8 rounded-full transition-all gap-1.5 px-3 ${v.memorized ? "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20" : "text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 hover:text-emerald-600 hover:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"}`}
+                              className={`h-8 rounded-full transition-all gap-1.5 px-3 ${
+                                v.memorized 
+                                  ? "text-zinc-400 bg-zinc-100/80 dark:text-zinc-500 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80" 
+                                  : "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
+                              }`}
                               onClick={() => toggleMemorized(v.id, v.memorized)}
                               title={v.memorized ? "เปลี่ยนเป็นยังจำไม่ได้" : "ทำเครื่องหมายว่าจำได้แล้ว"}
                             >
-                              {v.memorized ? (
-                                <>
-                                  <CheckCircle2 className="h-4 w-4" />
-                                  <span className="text-xs font-medium">จำได้แล้ว</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Brain className="h-4 w-4" />
-                                  <span className="text-xs font-medium">กำลังจำ</span>
-                                </>
-                              )}
+                              <CheckCircle2 className={`h-4 w-4 shrink-0 ${v.memorized ? "text-zinc-400 dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`} />
+                              <span className="text-xs font-medium">จำได้แล้ว</span>
                             </Button>
                             
                             <Button 
