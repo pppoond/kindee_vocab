@@ -40,6 +40,8 @@ import {
   Loader2,
   Calendar,
   Image as ImageIcon,
+  Upload,
+  X,
 } from "lucide-react"
 import { useAlert } from "@/components/alert-provider"
 
@@ -71,6 +73,8 @@ export function BlogsClient({ initialBlogs }: { initialBlogs: BlogItem[] }) {
   const { showAlert, showConfirm } = useAlert()
   const supabase = createClient()
 
+  const [uploadingImage, setUploadingImage] = useState(false)
+
   // Form State
   const [formData, setFormData] = useState({
     title: "",
@@ -95,6 +99,46 @@ export function BlogsClient({ initialBlogs }: { initialBlogs: BlogItem[] }) {
       is_pinned: false,
     })
     setEditingBlog(null)
+    setUploadingImage(false)
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      showAlert("ขนาดไฟล์รูปภาพต้องไม่เกิน 5MB", { type: "info", title: "ไฟล์มีขนาดใหญ่เกินไป" })
+      return
+    }
+
+    setUploadingImage(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `blogs/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`
+
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('kindee-vocab')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase
+        .storage
+        .from('kindee-vocab')
+        .getPublicUrl(fileName)
+
+      setFormData(prev => ({ ...prev, cover_image_url: publicUrl }))
+      showAlert("อัปโหลดรูปภาพสำเร็จ!", { type: "success" })
+    } catch (error: any) {
+      console.error("Error uploading image:", error)
+      showAlert(error.message || "เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ", { type: "error" })
+    } finally {
+      setUploadingImage(false)
+    }
   }
 
   const handleOpenAdd = () => {
@@ -470,16 +514,83 @@ export function BlogsClient({ initialBlogs }: { initialBlogs: BlogItem[] }) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="cover_image_url" className="flex items-center gap-1.5">
-                <ImageIcon className="h-4 w-4" />
-                รูปภาพปก/ประกอบ (Cover Image URL) (ถ้ามี)
+              <Label htmlFor="cover_image_url" className="flex items-center gap-1.5 font-medium">
+                <ImageIcon className="h-4 w-4 text-amber-500" />
+                รูปภาพปก/ประกอบ (เลือกอัปโหลดไฟล์ หรือ ระบุ URL) (ถ้ามี)
               </Label>
-              <Input
-                id="cover_image_url"
-                placeholder="https://example.com/image.jpg"
-                value={formData.cover_image_url}
-                onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
-              />
+              
+              <div className="space-y-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <div className="relative flex-1">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="image-file-upload"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full gap-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-amber-500"
+                      onClick={() => document.getElementById("image-file-upload")?.click()}
+                      disabled={uploadingImage}
+                    >
+                      {uploadingImage ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                          กำลังอัปโหลดรูปภาพ...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 text-amber-500" />
+                          อัปโหลดไฟล์รูปภาพจากเครื่อง
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <span className="text-xs text-muted-foreground text-center sm:text-left font-medium">หรือ</span>
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="cover_image_url" className="text-xs text-muted-foreground">
+                    หรือ วางลิงก์รูปภาพ (Image URL):
+                  </Label>
+                  <Input
+                    id="cover_image_url"
+                    placeholder="https://example.com/image.jpg"
+                    value={formData.cover_image_url}
+                    onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
+                  />
+                </div>
+
+                {formData.cover_image_url && (
+                  <div className="relative mt-2 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-black/5 p-2">
+                    <div className="flex items-center justify-between gap-2 pb-2 px-1">
+                      <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">ตัวอย่างรูปภาพ:</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        onClick={() => setFormData({ ...formData, cover_image_url: "" })}
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" />
+                        ลบรูปภาพ
+                      </Button>
+                    </div>
+                    <img
+                      src={formData.cover_image_url}
+                      alt="Preview"
+                      className="w-full h-36 object-cover rounded-lg"
+                      onError={(e) => {
+                        ;(e.target as HTMLElement).style.display = "none"
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-6 pt-2">
