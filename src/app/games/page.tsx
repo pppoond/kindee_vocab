@@ -123,7 +123,7 @@ export default function GamesPage() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
-        <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
+        <Button variant="pill-secondary" size="pill-sm" asChild>
           <Link href={isLoggedIn ? "/dashboard" : "/"}>
             <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">{isLoggedIn ? "Back to Dashboard" : "Back to Home"}</span>
           </Link>

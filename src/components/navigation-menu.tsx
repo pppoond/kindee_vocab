@@ -51,7 +51,7 @@ export function NavigationMenu() {
       <TicketModal open={isTicketModalOpen} onOpenChange={setIsTicketModalOpen} />
       
       <div className="flex items-center gap-2">
-        <Button variant="ghost" className="rounded-full gap-2 text-muted-foreground hover:text-primary" asChild>
+        <Button variant="pill-secondary" size="pill-sm" className="gap-2 text-muted-foreground hover:text-primary" asChild>
           <Link href="/">
             <Home className="h-4 w-4" /> กลับหน้าแรก
           </Link>

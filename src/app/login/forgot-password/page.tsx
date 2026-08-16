@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <CardFooter>
             <Link href="/login" className="w-full">
-              <Button variant="ghost" className="w-full">
+              <Button variant="pill-outline" size="pill" className="w-full">
                 ← Back to Login
               </Button>
             </Link>
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full" type="submit" disabled={loading}>
+              <Button variant="pill-chart-4" size="pill-lg" className="w-full font-bold" type="submit" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
                 ) : "Send Reset Link"}
               </Button>
               <Link href="/login" className="w-full">
-                <Button variant="ghost" type="button" className="w-full">
+                <Button variant="pill-outline" size="pill" type="button" className="w-full">
                   ← Back to Login
                 </Button>
               </Link>

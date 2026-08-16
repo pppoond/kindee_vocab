@@ -62,7 +62,7 @@ export default function DonatePage() {
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50">
         <Link href={user ? "/dashboard" : "/"}>
-          <Button variant="ghost" className="text-zinc-400 hover:text-white transition-colors">
+          <Button variant="pill-secondary" size="pill-sm" className="transition-colors">
             <ArrowLeft className="mr-2 h-4 w-4" /> {user ? "Back to Dashboard" : "Back to Home"}
           </Button>
         </Link>
@@ -142,7 +142,9 @@ export default function DonatePage() {
             </div>
 
             <Button 
-              className="w-full h-auto py-5 text-lg font-black gap-3 bg-gradient-to-r from-rose-500 to-indigo-600 hover:scale-[1.02] transition-transform shadow-[0_0_30px_rgba(225,29,72,0.3)]"
+              variant="pill-destructive"
+              size="pill-lg"
+              className="w-full gap-3 font-black shadow-[0_0_30px_rgba(225,29,72,0.3)]"
               asChild
             >
               <button onClick={() => {

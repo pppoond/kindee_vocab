@@ -328,7 +328,7 @@ export default function Dashboard() {
           </div>
           {/* Desktop Menu */}
           <div className="hidden sm:flex items-center gap-4">
-            <Button variant="outline" className="gap-2" asChild>
+            <Button variant="pill-outline" size="pill-sm" className="gap-2" asChild>
               <Link href="/">
                 <Home className="h-4 w-4" />
                 <span>หน้าแรก</span>
@@ -336,7 +336,7 @@ export default function Dashboard() {
             </Button>
             
             {isAdmin && (
-              <Button variant="outline" className="gap-2 text-amber-600 dark:text-amber-500 hover:text-amber-700" asChild>
+              <Button variant="pill-outline" size="pill-sm" className="gap-2 text-amber-600 dark:text-amber-500 hover:text-amber-700" asChild>
                 <Link href="/backoffice">
                   <LayoutDashboard className="h-4 w-4" />
                   <span>Backoffice</span>
@@ -344,14 +344,14 @@ export default function Dashboard() {
               </Button>
             )}
             
-            <Button variant="outline" className="gap-2" asChild>
+            <Button variant="pill-outline" size="pill-sm" className="gap-2" asChild>
               <Link href="/games">
                 <Gamepad2 className="h-4 w-4" />
                 <span>Play Game</span>
               </Link>
             </Button>
 
-            <Button variant="outline" className="gap-2" asChild>
+            <Button variant="pill-outline" size="pill-sm" className="gap-2" asChild>
               <Link href="/verb3">
                 <BookOpen className="h-4 w-4" />
                 <span>Verb 3 Channels</span>
@@ -360,13 +360,13 @@ export default function Dashboard() {
             
             {/* Profile & Support */}
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsTicketModalOpen(true)} className="gap-2 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400">
+              <Button variant="pill-outline" size="pill-sm" onClick={() => setIsTicketModalOpen(true)} className="gap-2 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400">
                 <LifeBuoy className="h-4 w-4" />
                 <span>แจ้งปัญหา</span>
               </Button>
-              <Button variant="outline" size="sm" className="bg-rose-50 dark:bg-zinc-900 border-rose-200 dark:border-zinc-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/20 hover:text-rose-700 dark:hover:text-rose-400 gap-2 shadow-[0_0_15px_rgba(225,29,72,0.1)] transition-colors" asChild>
+              <Button variant="pill-destructive" size="pill-sm" className="gap-2" asChild>
                 <Link href="/donate">
-                  <Heart className="h-4 w-4 fill-rose-500 animate-pulse" />
+                  <Heart className="h-4 w-4 fill-current animate-pulse" />
                   <span>Support</span>
                 </Link>
               </Button>
@@ -519,7 +519,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-2 pt-2">
             {publicTags.map(tag => (
               <Link key={tag.name} href={`/learn/${tag.name}`}>
-                <Button variant="outline" className="rounded-full capitalize border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-900/10 hover:text-amber-600 transition-colors shadow-sm">
+                <Button variant="pill-chart-4" size="pill-sm" className="capitalize">
                   {tag.name}
                 </Button>
               </Link>
@@ -698,10 +698,10 @@ export default function Dashboard() {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className={`h-8 rounded-full transition-all gap-1.5 px-3 ${
+                              className={`h-8 rounded-xl border border-b-4 transition-all gap-1.5 px-3 active:border-b active:translate-y-[3px] ${
                                 v.memorized 
-                                  ? "text-zinc-400 bg-zinc-100/80 dark:text-zinc-500 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80" 
-                                  : "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
+                                  ? "text-zinc-400 bg-zinc-100/80 dark:text-zinc-500 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80" 
+                                  : "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 border-emerald-500/40 dark:border-emerald-500/40 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
                               }`}
                               onClick={() => toggleMemorized(v.id, v.memorized)}
                               title={v.memorized ? "เปลี่ยนเป็นยังจำไม่ได้" : "ทำเครื่องหมายว่าจำได้แล้ว"}
