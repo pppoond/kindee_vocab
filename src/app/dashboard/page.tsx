@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sheet"
 
 import { AdBanner } from "@/components/ad-banner"
+import { BlogAnnouncements } from "@/components/blog-announcements"
 
 import { getExampleSentences } from "@/lib/dictionary"
 import { PullToRefresh } from "@/components/pull-to-refresh"
@@ -492,6 +493,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        <BlogAnnouncements />
         <AdBanner position="dashboard_middle" />
 
         <div className="mb-8">

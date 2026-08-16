@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, LifeBuoy, ArrowLeft, Menu } from "lucide-react"
+import { LayoutDashboard, LifeBuoy, ArrowLeft, Menu, Newspaper } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -37,7 +37,7 @@ export default async function BackofficeLayout({
 
   const navLinks = [
     { name: "Tickets", href: "/backoffice/tickets", icon: LifeBuoy },
-    // Add more backoffice links here in the future
+    { name: "Blogs & Announcements", href: "/backoffice/blogs", icon: Newspaper },
   ]
 
   return (

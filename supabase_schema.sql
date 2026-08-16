@@ -60,3 +60,40 @@ CREATE POLICY "Users can insert their own game_sessions"
 CREATE POLICY "Users can update their own game_sessions"
   ON game_sessions FOR UPDATE
   USING (auth.uid() = user_id);
+
+-- Create blogs table
+CREATE TABLE blogs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  slug TEXT,
+  summary TEXT NOT NULL,
+  content TEXT NOT NULL,
+  category TEXT DEFAULT 'update',
+  badge_color TEXT DEFAULT 'amber',
+  cover_image_url TEXT,
+  is_published BOOLEAN DEFAULT TRUE,
+  is_pinned BOOLEAN DEFAULT FALSE,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  published_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE blogs ENABLE ROW LEVEL SECURITY;
+
+-- Policies for blogs
+CREATE POLICY "Public users can view published blogs"
+  ON blogs FOR SELECT
+  USING (is_published = true);
+
+CREATE POLICY "Admins can do all operations on blogs"
+  ON blogs FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM user_settings
+      WHERE user_settings.user_id = auth.uid()
+      AND user_settings.role = 'admin'
+    )
+  );
+
