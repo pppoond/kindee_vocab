@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
@@ -19,12 +19,41 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+
+        // 3D Pill Variants (System Theme Colors)
+        pill:
+          "rounded-full bg-primary/10 text-primary border-[2.5px] border-primary shadow-[0_3.5px_0_0_var(--primary)] hover:bg-primary/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--primary)]",
+        "pill-primary":
+          "rounded-full bg-primary text-primary-foreground border-[2.5px] border-primary shadow-[0_3.5px_0_0_var(--ring)] hover:bg-primary/90 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--ring)]",
+        "pill-secondary":
+          "rounded-full bg-secondary text-secondary-foreground border-[2.5px] border-border shadow-[0_3.5px_0_0_var(--border)] hover:bg-secondary/80 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--border)]",
+        "pill-destructive":
+          "rounded-full bg-destructive/10 text-destructive border-[2.5px] border-destructive shadow-[0_3.5px_0_0_var(--destructive)] hover:bg-destructive/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--destructive)]",
+        "pill-outline":
+          "rounded-full bg-background text-foreground border-[2.5px] border-input shadow-[0_3.5px_0_0_var(--border)] hover:bg-accent active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--border)]",
+        "pill-accent":
+          "rounded-full bg-accent text-accent-foreground border-[2.5px] border-accent-foreground/30 shadow-[0_3.5px_0_0_var(--accent-foreground)] hover:bg-accent/80 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--accent-foreground)]",
+        "pill-chart-1":
+          "rounded-full bg-[var(--chart-1)]/10 text-[var(--chart-1)] border-[2.5px] border-[var(--chart-1)] shadow-[0_3.5px_0_0_var(--chart-1)] hover:bg-[var(--chart-1)]/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--chart-1)]",
+        "pill-chart-2":
+          "rounded-full bg-[var(--chart-2)]/10 text-[var(--chart-2)] border-[2.5px] border-[var(--chart-2)] shadow-[0_3.5px_0_0_var(--chart-2)] hover:bg-[var(--chart-2)]/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--chart-2)]",
+        "pill-chart-3":
+          "rounded-full bg-[var(--chart-3)]/10 text-[var(--chart-3)] border-[2.5px] border-[var(--chart-3)] shadow-[0_3.5px_0_0_var(--chart-3)] hover:bg-[var(--chart-3)]/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--chart-3)]",
+        "pill-chart-4":
+          "rounded-full bg-[var(--chart-4)]/10 text-[var(--chart-4)] border-[2.5px] border-[var(--chart-4)] shadow-[0_3.5px_0_0_var(--chart-4)] hover:bg-[var(--chart-4)]/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--chart-4)]",
+        "pill-chart-5":
+          "rounded-full bg-[var(--chart-5)]/10 text-[var(--chart-5)] border-[2.5px] border-[var(--chart-5)] shadow-[0_3.5px_0_0_var(--chart-5)] hover:bg-[var(--chart-5)]/20 active:translate-y-[2px] active:shadow-[0_1.5px_0_0_var(--chart-5)]",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
+
+        // Pill sizes
+        pill: "h-11 px-5 rounded-full text-base font-bold",
+        "pill-sm": "h-9 px-4 rounded-full text-sm font-semibold",
+        "pill-lg": "h-12 px-6 rounded-full text-lg font-bold",
       },
     },
     defaultVariants: {
@@ -54,4 +83,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+/**
+ * Icon container badge for 3D Pill buttons as seen in reference design.
+ */
+const PillIconBadge = ({
+  children,
+  className,
+}: {
+  children?: React.ReactNode
+  className?: string
+}) => (
+  <span
+    className={cn(
+      "inline-flex items-center justify-center p-1.5 rounded-lg bg-current/15 shrink-0 [&_svg]:size-4",
+      className
+    )}
+  >
+    {children}
+  </span>
+)
+
+export { Button, buttonVariants, PillIconBadge }
+
