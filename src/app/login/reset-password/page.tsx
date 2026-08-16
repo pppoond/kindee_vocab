@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
               )}
             </CardContent>
             <CardFooter>
-              <Button className="w-full" type="submit" disabled={loading}>
+              <Button variant="pill-chart-4" size="pill-lg" className="w-full font-bold" type="submit" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

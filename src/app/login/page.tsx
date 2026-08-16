@@ -44,7 +44,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-black relative">
       <div className="absolute top-4 left-4">
-        <Button variant="ghost" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100" asChild>
+        <Button variant="pill-secondary" size="pill-sm" asChild>
           <Link href="/">
             <ArrowLeft className="h-4 w-4 mr-2" />
             กลับหน้าแรก
@@ -102,7 +102,7 @@ export default function LoginPage() {
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full" type="submit" disabled={loading}>
+            <Button variant="pill-chart-4" size="pill-lg" className="w-full font-bold" type="submit" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -111,7 +111,8 @@ export default function LoginPage() {
               ) : "Login"}
             </Button>
             <Button 
-              variant="ghost" 
+              variant="pill-outline" 
+              size="pill"
               type="button"
               className="w-full"
               asChild
