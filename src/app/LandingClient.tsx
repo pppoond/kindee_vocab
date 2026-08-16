@@ -62,17 +62,17 @@ export function LandingClient() {
             <div className="hidden md:flex items-center gap-4">
               {user ? (
                 <Link href="/dashboard">
-                  <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">
+                  <Button variant="pill-chart-4" size="pill">
                     Go to Dashboard <LayoutDashboard className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               ) : (
                 <div className="flex items-center gap-2">
                   <Link href="/login">
-                    <Button variant="ghost" className="rounded-full hover:bg-amber-500/10">Sign In</Button>
+                    <Button variant="pill-outline" size="pill-sm">Sign In</Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-6">Get Started</Button>
+                    <Button variant="pill-chart-4" size="pill-sm">Get Started</Button>
                   </Link>
                 </div>
               )}
@@ -188,7 +188,7 @@ export function LandingClient() {
 
           <div className="flex items-center justify-center gap-4 mb-12">
             <Link href="/games">
-              <Button size="lg" className="rounded-full bg-amber-500 hover:bg-amber-600 border-none px-8 h-14 text-lg font-bold gap-2 shadow-xl shadow-amber-500/20 hover:scale-105 transition-transform duration-300">
+              <Button variant="pill-chart-4" size="pill-lg" className="px-8 h-14 text-lg font-bold gap-2 shadow-xl shadow-amber-500/20 hover:scale-105 transition-transform duration-300">
                 <Gamepad2 className="h-6 w-6" /> เข้าสู่มินิเกมเลย
               </Button>
             </Link>
@@ -335,8 +335,8 @@ export function LandingClient() {
                  เพื่อให้ทุกคนได้อัปสกิลภาษาอังกฤษแบบสนุกจอยๆ ไปด้วยกัน
                </p>
                <Link href="/donate" className="relative z-10 inline-block">
-                  <Button size="lg" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-none gap-2 px-8 shadow-lg shadow-rose-500/25 transition-all hover:scale-105">
-                     <Heart className="h-5 w-5 fill-white" /> Support Kindee
+                  <Button variant="pill-destructive" size="pill-lg" className="gap-2 px-8 shadow-lg shadow-rose-500/25 transition-all hover:scale-105">
+                     <Heart className="h-5 w-5 fill-current" /> Support Kindee
                   </Button>
                </Link>
             </div>
@@ -434,7 +434,7 @@ function GamePreviewCard({ title, description, color, image, buttonText }: { tit
        <div className="flex-1 space-y-4">
           <h3 className="text-2xl font-bold">{title}</h3>
           <p className="text-zinc-500 dark:text-zinc-400 ThaiFont">{description}</p>
-          <Button variant="outline" className={`rounded-full gap-2 border-zinc-200 dark:border-zinc-800 ${iconColor} bg-white dark:bg-black font-semibold`}>
+          <Button variant="pill-outline" size="pill-sm" className={`gap-2 ${iconColor} font-semibold`}>
              {buttonText} <Zap className="h-4 w-4" />
           </Button>
        </div>
