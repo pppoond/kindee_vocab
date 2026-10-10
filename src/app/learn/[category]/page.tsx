@@ -13,31 +13,43 @@ function getCategoryInfo(category: string) {
     return {
       displayCategory: 'Oxford 3000',
       seoDescription: 'เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวด Oxford 3000 ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab',
-      pageDescription: 'คำศัพท์ภาษาอังกฤษหมวด Oxford 3000 ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ'
+      pageDescription: 'คำศัพท์ภาษาอังกฤษหมวด Oxford 3000 ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ',
+      keywords: ['Oxford 3000', 'คำศัพท์ Oxford 3000', 'คำศัพท์ภาษาอังกฤษ 3000 คำ', 'ศัพท์ภาษาอังกฤษพื้นฐาน', 'ท่องศัพท์', 'เรียนภาษาอังกฤษ', 'Kindee Vocab']
     };
   } else if (cat === 'irregular-verbs') {
     return {
       displayCategory: 'Irregular Verbs (กริยา 3 ช่อง)',
       seoDescription: 'เรียนรู้และท่องกริยา 3 ช่องภาษาอังกฤษ (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab',
-      pageDescription: 'รวบรวมคำกริยา 3 ช่อง (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และช่องที่ 1 ให้คุณท่องจำและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ'
+      pageDescription: 'รวบรวมคำกริยา 3 ช่อง (Irregular Verbs) ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย V2, V3 และช่องที่ 1 ให้คุณท่องจำและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ',
+      keywords: ['กริยา 3 ช่อง', 'Irregular Verbs', 'ท่องกริยา 3 ช่อง', 'v1 v2 v3', 'ไวยากรณ์ภาษาอังกฤษ', 'คำศัพท์ภาษาอังกฤษ', 'Kindee Vocab']
     };
   } else if (cat === 'business') {
     return {
       displayCategory: 'Business (หมวดธุรกิจ)',
-      seoDescription: 'เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวดธุรกิจ (Business) ที่ใช้บ่อยในการทำงานและการบริหารงาน พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค',
-      pageDescription: 'รวบรวมคำศัพท์ภาษาอังกฤษหมวดธุรกิจและการทำงาน (Business English) ที่ใช้บ่อยในการทำงานจริง ให้คุณเรียนรู้และทบทวนได้ง่ายๆ'
+      seoDescription: 'เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวดธุรกิจ (Business) ที่ใช้บ่อยในการทำงานและการบริหารงาน พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค บน Kindee Vocab',
+      pageDescription: 'รวบรวมคำศัพท์ภาษาอังกฤษหมวดธุรกิจและการทำงาน (Business English) ที่ใช้บ่อยในการทำงานจริง ให้คุณเรียนรู้และทบทวนได้ง่ายๆ',
+      keywords: ['Business English', 'คำศัพท์หมวดธุรกิจ', 'ศัพท์ภาษาอังกฤษสำหรับคนทำงาน', 'ศัพท์ธุรกิจ', 'คำศัพท์ภาษาอังกฤษ', 'Kindee Vocab']
     };
   } else if (cat === 'toeic') {
     return {
       displayCategory: 'TOEIC (คำศัพท์เตรียมสอบ TOEIC)',
-      seoDescription: 'รวมคำศัพท์ภาษาอังกฤษสำหรับสอบ TOEIC ที่ออกสอบบ่อยที่สุด คัดสรรคำศัพท์สำคัญในชีวิตการทำงานและธุรกิจ พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค',
-      pageDescription: 'รวบรวมคำศัพท์ภาษาอังกฤษสำหรับเตรียมสอบ TOEIC ที่พบบ่อยในข้อสอบจริง เหมาะสำหรับการเตรียมตัวสอบ อัปคะแนน และใช้ในการทำงาน'
+      seoDescription: 'รวมคำศัพท์ภาษาอังกฤษสำหรับสอบ TOEIC ที่ออกสอบบ่อยที่สุด คัดสรรคำศัพท์สำคัญในชีวิตการทำงานและธุรกิจ พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค บน Kindee Vocab',
+      pageDescription: 'รวบรวมคำศัพท์ภาษาอังกฤษสำหรับเตรียมสอบ TOEIC ที่พบบ่อยในข้อสอบจริง เหมาะสำหรับการเตรียมตัวสอบ อัปคะแนน และใช้ในการทำงาน',
+      keywords: ['คำศัพท์ TOEIC', 'เตรียมสอบ TOEIC', 'ศัพท์ TOEIC ออกบ่อย', 'TOEIC vocabulary', 'ติวสอบ TOEIC', 'คำศัพท์ภาษาอังกฤษ', 'Kindee Vocab']
+    };
+  } else if (cat === 'food') {
+    return {
+      displayCategory: 'Food & Dining (หมวดอาหารและเครื่องดื่ม)',
+      seoDescription: 'เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวดอาหารและเครื่องดื่ม (Food & Dining) พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยคที่ใช้จริงในชีวิตประจำวัน บน Kindee Vocab',
+      pageDescription: 'รวบรวมคำศัพท์ภาษาอังกฤษหมวดอาหาร วัตถุดิบ รสชาติ และการสั่งอาหาร พร้อมตัวอย่างประโยคจริงที่คนใช้พูดกัน ให้คุณท่องและนำไปใช้ได้ทันที',
+      keywords: ['คำศัพท์หมวดอาหาร', 'ศัพท์อาหารภาษาอังกฤษ', 'Food vocabulary', 'คำศัพท์ร้านอาหาร', 'การสั่งอาหารภาษาอังกฤษ', 'คำศัพท์ภาษาอังกฤษ', 'Kindee Vocab']
     };
   }
   return {
     displayCategory: category,
     seoDescription: `เรียนรู้และท่องคำศัพท์ภาษาอังกฤษหมวด ${category} ที่ใช้บ่อยที่สุด พร้อมความหมายภาษาไทย ชนิดของคำ และตัวอย่างประโยค เพิ่มเข้าคลังคำศัพท์ของคุณได้ทันทีบน Kindee Vocab`,
-    pageDescription: `คำศัพท์ภาษาอังกฤษหมวด ${category} ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ`
+    pageDescription: `คำศัพท์ภาษาอังกฤษหมวด ${category} ที่รวบรวมมาให้คุณท่องและเพิ่มเข้าคลังส่วนตัวได้ง่ายๆ`,
+    keywords: [category, `คำศัพท์หมวด ${category}`, 'คำศัพท์ภาษาอังกฤษ', 'ท่องศัพท์', 'Kindee Vocab']
   };
 }
 
@@ -48,13 +60,41 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const resolvedParams = await params;
   const category = resolvedParams.category;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kindee-vocab.vercel.app';
 
-  const { displayCategory, seoDescription } = getCategoryInfo(category);
+  const { displayCategory, seoDescription, keywords } = getCategoryInfo(category);
+  const title = `คลังคำศัพท์หมวด ${displayCategory} พร้อมความหมายภาษาไทยและตัวอย่างประโยค`;
+  const pageUrl = `${baseUrl}/learn/${encodeURIComponent(category)}`;
 
   return {
-    title: `คำศัพท์หมวด ${displayCategory} พร้อมความหมายภาษาไทย`,
+    title,
     description: seoDescription,
-    keywords: [displayCategory, "คำศัพท์ภาษาอังกฤษ", "ท่องศัพท์", "คำศัพท์", "vocabulary", "เรียนภาษาอังกฤษ", "กริยา 3 ช่อง", "oxford3000", "คำศัพท์ oxford 3000"],
+    keywords,
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      title: `${title} | Kindee Vocab`,
+      description: seoDescription,
+      url: pageUrl,
+      type: 'website',
+      locale: 'th_TH',
+      siteName: 'Kindee Vocab',
+      images: [
+        {
+          url: '/assets/logos/logo.png',
+          width: 512,
+          height: 512,
+          alt: `Kindee Vocab - คลังคำศัพท์หมวด ${displayCategory}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary',
+      title: `${title} | Kindee Vocab`,
+      description: seoDescription,
+      images: ['/assets/logos/logo.png'],
+    },
   };
 }
 
@@ -106,7 +146,7 @@ export default async function LearnCategoryPage({
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-amber-500"></div>
-            <p className="text-lg font-medium animate-pulse">กำลังโหลดคลังคำศัพท์กว่า 3,000 คำ...</p>
+            <p className="text-lg font-medium animate-pulse">กำลังโหลด...</p>
           </div>
         }>
           <VocabFetcher category={category} />
