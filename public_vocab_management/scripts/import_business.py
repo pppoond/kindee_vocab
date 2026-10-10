@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import requests
+from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from deep_translator import GoogleTranslator
@@ -9,14 +10,16 @@ from deep_translator import GoogleTranslator
 # Set default encoding to utf-8 for Windows console
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Load environment variables from .env.local in the root directory
-load_dotenv(dotenv_path='../../.env.local')
+# Load environment variables from project root (.env or .env.local)
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(dotenv_path=ROOT_DIR / '.env')
+load_dotenv(dotenv_path=ROOT_DIR / '.env.local')
 
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    print("Error: Missing Supabase URL or Key in .env.local")
+    print(f"Error: Missing Supabase URL or Key in {ROOT_DIR / '.env'}")
     exit(1)
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)

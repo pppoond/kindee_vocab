@@ -3,6 +3,7 @@ CREATE TABLE public.user_settings (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     role TEXT NOT NULL DEFAULT 'user',
+    word_sort_order TEXT DEFAULT 'newest',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     UNIQUE(user_id)
@@ -16,10 +17,15 @@ CREATE POLICY "Users can view own settings"
 ON public.user_settings FOR SELECT
 USING (auth.uid() = user_id);
 
--- (Optional) If we want users to insert their own default settings initially
+-- Allow users to insert their own default settings
 CREATE POLICY "Users can insert own settings"
 ON public.user_settings FOR INSERT
 WITH CHECK (auth.uid() = user_id);
+
+-- Allow users to update their own settings
+CREATE POLICY "Users can update own settings"
+ON public.user_settings FOR UPDATE
+USING (auth.uid() = user_id);
 
 
 -- 2. Create helper function for RLS to check if user is admin

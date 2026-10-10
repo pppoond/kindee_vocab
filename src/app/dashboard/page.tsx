@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw, Menu, Home, LayoutDashboard } from "lucide-react"
+import { Plus, LogOut, Gamepad2, BookOpen, Trash2, Pencil, ChevronLeft, ChevronRight, MoreHorizontal, Star, Target, Search, Volume2, Filter, Heart, Lightbulb, Loader2, RefreshCw, Menu, Home, LayoutDashboard, ArrowDownAZ, ArrowUpAZ, ArrowUpDown, Clock } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,15 +88,26 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterMemorized, setFilterMemorized] = useState("all")
+  const [sortOrder, setSortOrder] = useState<string>("newest")
   const [publicTags, setPublicTags] = useState<{name: string}[]>([])
   
   // New states for example sentences
   const [apiExamples, setApiExamples] = useState<Record<string, string[]>>({})
   const [exampleLoading, setExampleLoading] = useState<Record<string, boolean>>({})
 
+  // Read sort order from localStorage on client mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("kindee_word_sort_order")
+      if (cached && ["a-z", "z-a", "newest", "oldest"].includes(cached)) {
+        setSortOrder(cached)
+      }
+    }
+  }, [])
+
   const handleRefresh = async () => {
     await Promise.all([
-      fetchVocabularies(1, searchQuery, filterType, filterMemorized),
+      fetchVocabularies(1, searchQuery, filterType, filterMemorized, sortOrder),
       fetchDailyStats(),
     ])
     const { data: tags } = await supabase.from('public_tags').select('name').order('name')
@@ -107,7 +118,13 @@ export default function Dashboard() {
   const router = useRouter()
   const { showAlert, showConfirm } = useAlert()
 
-  const fetchVocabularies = useCallback(async (page: number, search = searchQuery, type = filterType, memorized = filterMemorized) => {
+  const fetchVocabularies = useCallback(async (
+    page: number, 
+    search = searchQuery, 
+    type = filterType, 
+    memorized = filterMemorized,
+    sort = sortOrder
+  ) => {
     setLoading(true)
     const from = (page - 1) * PAGE_SIZE
     const to = from + PAGE_SIZE - 1
@@ -115,7 +132,18 @@ export default function Dashboard() {
     let query = supabase
       .from("vocabularies")
       .select("id, word, type, meaning, v2, v3, example, memorized, created_at", { count: "exact" })
-      .order("created_at", { ascending: false })
+
+    // Sorting options
+    if (sort === "a-z") {
+      query = query.order("word", { ascending: true })
+    } else if (sort === "z-a") {
+      query = query.order("word", { ascending: false })
+    } else if (sort === "oldest") {
+      query = query.order("created_at", { ascending: true })
+    } else {
+      // Default: "newest"
+      query = query.order("created_at", { ascending: false })
+    }
 
     if (search.trim()) {
       query = query.or(`word.ilike.%${search.trim()}%,meaning.ilike.%${search.trim()}%`)
@@ -138,7 +166,7 @@ export default function Dashboard() {
       if (count !== null) setTotalCount(count)
     }
     setLoading(false)
-  }, [supabase, searchQuery, filterType, filterMemorized])
+  }, [supabase, searchQuery, filterType, filterMemorized, sortOrder])
 
   const speakWord = (word: string) => {
     if ('speechSynthesis' in window) {
@@ -165,19 +193,46 @@ export default function Dashboard() {
   const handleSearch = (value: string) => {
     setSearchQuery(value)
     setCurrentPage(1)
-    fetchVocabularies(1, value, filterType, filterMemorized)
+    fetchVocabularies(1, value, filterType, filterMemorized, sortOrder)
   }
 
   const handleFilterType = (value: string) => {
     setFilterType(value)
     setCurrentPage(1)
-    fetchVocabularies(1, searchQuery, value, filterMemorized)
+    fetchVocabularies(1, searchQuery, value, filterMemorized, sortOrder)
   }
 
   const handleFilterMemorized = (value: string) => {
     setFilterMemorized(value)
     setCurrentPage(1)
-    fetchVocabularies(1, searchQuery, filterType, value)
+    fetchVocabularies(1, searchQuery, filterType, value, sortOrder)
+  }
+
+  const handleSortChange = async (value: string) => {
+    setSortOrder(value)
+    setCurrentPage(1)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("kindee_word_sort_order", value)
+    }
+
+    if (user?.id) {
+      try {
+        await supabase
+          .from("user_settings")
+          .upsert(
+            { 
+              user_id: user.id, 
+              word_sort_order: value,
+              updated_at: new Date().toISOString()
+            }, 
+            { onConflict: "user_id" }
+          )
+      } catch (err) {
+        console.warn("Could not save sort order to user_settings:", err)
+      }
+    }
+
+    fetchVocabularies(1, searchQuery, filterType, filterMemorized, value)
   }
 
   const fetchDailyStats = useCallback(async () => {
@@ -209,10 +264,32 @@ export default function Dashboard() {
       }
       setUser(user)
       
-      const { data: userSettings } = await supabase.from("user_settings").select("role").eq("user_id", user.id).single()
-      if (userSettings?.role === 'admin') setIsAdmin(true)
+      let effectiveSort = sortOrder
+      try {
+        const { data: userSettings } = await supabase
+          .from("user_settings")
+          .select("role, word_sort_order")
+          .eq("user_id", user.id)
+          .maybeSingle()
+
+        if (userSettings?.role === 'admin') setIsAdmin(true)
+        if (userSettings?.word_sort_order && ["a-z", "z-a", "newest", "oldest"].includes(userSettings.word_sort_order)) {
+          effectiveSort = userSettings.word_sort_order
+          setSortOrder(effectiveSort)
+          if (typeof window !== "undefined") {
+            localStorage.setItem("kindee_word_sort_order", effectiveSort)
+          }
+        }
+      } catch (err) {
+        const { data: userSettings } = await supabase
+          .from("user_settings")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle()
+        if (userSettings?.role === 'admin') setIsAdmin(true)
+      }
       
-      fetchVocabularies(currentPage)
+      fetchVocabularies(currentPage, searchQuery, filterType, filterMemorized, effectiveSort)
       fetchDailyStats()
 
       const { data: tags } = await supabase.from('public_tags').select('name').order('name')
@@ -629,8 +706,31 @@ export default function Dashboard() {
 
         {/* List */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Your Word List</h2>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold">Your Word List</h2>
+              {totalCount > 0 && (
+                <Badge variant="secondary" className="font-normal text-xs text-muted-foreground">
+                  {totalCount} คำ
+                </Badge>
+              )}
+            </div>
+            
+            {/* Quick Alphabetical Sort Toggle Button */}
+            <Button
+              variant={sortOrder === "a-z" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleSortChange(sortOrder === "a-z" ? "newest" : "a-z")}
+              className={`gap-1.5 h-8.5 px-3.5 text-xs font-medium rounded-full transition-all ${
+                sortOrder === "a-z"
+                  ? "bg-amber-500 hover:bg-amber-600 text-white shadow-sm shadow-amber-500/20"
+                  : "hover:border-amber-500/50 hover:text-amber-600"
+              }`}
+              title={sortOrder === "a-z" ? "กำลังเรียงตามตัวอักษร A-Z (คลิกเพื่อกลับไปเรียงคำล่าสุด)" : "คลิกเพื่อเรียงตามตัวอักษร A-Z"}
+            >
+              <ArrowDownAZ className="h-4 w-4" />
+              <span>{sortOrder === "a-z" ? "เรียง A-Z อยู่" : "เรียงตามตัวอักษร A-Z"}</span>
+            </Button>
           </div>
 
           {/* Search & Filter */}
@@ -645,7 +745,7 @@ export default function Dashboard() {
               />
             </div>
             <Select value={filterType} onValueChange={handleFilterType}>
-              <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectTrigger className="w-full sm:w-[130px]">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -656,13 +756,53 @@ export default function Dashboard() {
               </SelectContent>
             </Select>
             <Select value={filterMemorized} onValueChange={handleFilterMemorized}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-full sm:w-[135px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="no">Not Memorized</SelectItem>
                 <SelectItem value="yes">Memorized</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortOrder} onValueChange={handleSortChange}>
+              <SelectTrigger className={`w-full sm:w-[165px] ${sortOrder === "a-z" || sortOrder === "z-a" ? "border-amber-500/50 text-amber-600 dark:text-amber-400 font-medium" : ""}`}>
+                <div className="flex items-center gap-1.5 truncate">
+                  {sortOrder === "a-z" ? (
+                    <ArrowDownAZ className="h-4 w-4 text-amber-500 shrink-0" />
+                  ) : sortOrder === "z-a" ? (
+                    <ArrowUpAZ className="h-4 w-4 text-amber-500 shrink-0" />
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                  )}
+                  <SelectValue placeholder="Sort" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="a-z">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownAZ className="h-4 w-4 text-amber-500" />
+                    <span>A - Z (ตามตัวอักษร)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="z-a">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpAZ className="h-4 w-4 text-amber-500" />
+                    <span>Z - A (ย้อนตัวอักษร)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="newest">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span>ล่าสุด (Newest)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="oldest">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span>เก่าสุด (Oldest)</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
