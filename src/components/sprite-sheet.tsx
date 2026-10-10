@@ -1,7 +1,5 @@
 "use client"
 
-import type { AnimationConfig } from "@/lib/game-assets"
-
 export const SpriteSheet = ({ 
   src, 
   frames, 
@@ -10,24 +8,32 @@ export const SpriteSheet = ({
   delay = 0,
   className = "",
   scale = 1,
-  flip = false
+  flip = false,
+  offsetY = "0%"
 }: { 
   src: string, 
   frames: number, 
   fps?: number, 
   loop?: boolean,
   delay?: number,
-  className?: string,
-  scale?: number,
-  flip?: boolean
+  className?: string, 
+  scale?: number, 
+  flip?: boolean,
+  offsetY?: string
 }) => {
   const duration = loop ? frames / fps : (frames - 1) / fps;
   const animationName = `slide-sprite-${frames}-${src.replace(/[^a-zA-Z0-9]/g, '')}`;
   
   return (
     <div 
-      className={`overflow-hidden absolute bottom-0 left-[50%] -translate-x-[50%] pointer-events-none ${className}`}
-      style={{ width: `${scale * 100}%`, height: `${scale * 100}%` }}
+      className={`overflow-hidden absolute left-[50%] pointer-events-none ${className}`}
+      style={{ 
+        width: `${scale * 100}%`, 
+        height: `${scale * 100}%`,
+        bottom: offsetY,
+        transform: flip ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%)',
+        transformOrigin: 'center bottom'
+      }}
     >
       <style>{`
         @keyframes ${animationName} {
@@ -38,7 +44,7 @@ export const SpriteSheet = ({
         key={src}
         src={src} 
         alt="sprite" 
-        className={`max-w-none h-full absolute top-0 left-0 [image-rendering:pixelated] ${flip ? '-scale-x-100' : ''}`}
+        className="max-w-none h-full absolute top-0 left-0 [image-rendering:pixelated]"
         style={{
           width: `${frames * 100}%`,
           animation: `${animationName} ${duration}s steps(${frames - 1}, end) ${delay}s ${loop ? 'infinite' : '1 forwards'}`
