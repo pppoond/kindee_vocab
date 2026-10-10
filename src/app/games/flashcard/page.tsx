@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Trophy, RotateCcw, Clock, X, Check, Layers, Timer } from "lucide-react"
+import { ArrowLeft, Trophy, RotateCcw, Clock, X, Check, Layers, Timer, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useFlashcardEngine, TIME_OPTIONS } from "@/hooks/useFlashcardEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
@@ -123,8 +123,10 @@ export default function FlashcardGame() {
               <Layers className="h-3.5 w-3.5" />
               Flashcard
             </Badge>
-            <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-xs">
-              ✅ {correctCount} / ❌ {wrongCount}
+            <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-xs flex items-center gap-2">
+              <span className="flex items-center gap-1 text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" /> {correctCount}</span>
+              <span className="text-zinc-600">/</span>
+              <span className="flex items-center gap-1 text-rose-400"><XCircle className="w-3.5 h-3.5" /> {wrongCount}</span>
             </Badge>
           </div>
         )}

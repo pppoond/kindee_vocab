@@ -138,7 +138,7 @@ export function useTimeAttackEngine(onAlert?: (message: string) => void) {
     if (answer === currentWord?.meaning) {
       correctCountRef.current += 1
       setCorrectCount(correctCountRef.current)
-      setFeedback({ type: "success", message: "Correct! ✅" })
+      setFeedback({ type: "success", message: "Correct!" })
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)

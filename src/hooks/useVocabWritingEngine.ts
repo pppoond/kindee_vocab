@@ -132,7 +132,7 @@ export function useVocabWritingEngine(onAlert?: (message: string) => void) {
     if (normalizedTyped === normalizedTarget) {
       correctCountRef.current += 1
       setCorrectCount(correctCountRef.current)
-      setFeedback({ type: "success", message: "Correct! ✅" })
+      setFeedback({ type: "success", message: "Correct!" })
     } else {
       wrongCountRef.current += 1
       setWrongCount(wrongCountRef.current)

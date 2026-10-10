@@ -2,7 +2,17 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { ASSETS, getEnemyStats, HERO_DAMAGE, getAllAssetUrls, preloadImages } from "@/lib/game-assets"
+import { 
+  ASSETS, 
+  HEROES, 
+  ENEMIES, 
+  getEnemyStats, 
+  HERO_DAMAGE, 
+  getAllAssetUrls, 
+  preloadImages,
+  CharacterData,
+  EnemyStatConfig 
+} from "@/lib/game-assets"
 import { useRouter } from "next/navigation"
 
 export type Vocabulary = {
@@ -14,7 +24,7 @@ export type Vocabulary = {
 
 export type GameMode = "normal" | "fullvocab" | "oxford3000"
 export type GameState = "playing" | "won" | "lost" | "leveling"
-export type CharacterState = "idle" | "attack" | "hurt" | "win" | "lose"
+export type CharacterState = "idle" | "attack" | "attack2" | "attack3" | "hurt" | "win" | "lose"
 
 export function useGameEngine(mode: GameMode, onAlert?: (message: string) => void) {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([])
@@ -22,24 +32,38 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
   const [options, setOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [level, setLevel] = useState(1)
-  const [playerHp, setPlayerHp] = useState(ASSETS.hero.maxHp)
-  const [beastHp, setBeastHp] = useState(getEnemyStats(1).maxHp)
-  const [beastMaxHp, setBeastMaxHp] = useState(getEnemyStats(1).maxHp)
+  
+  // Hero selection
+  const [heroId, setHeroIdState] = useState<string>("knight")
+  const currentHero = useMemo(() => HEROES[heroId] || HEROES.knight, [heroId])
+  const heroRef = useRef(currentHero)
+  heroRef.current = currentHero
+
+  const initialEnemy = useMemo(() => getEnemyStats(1), [])
+  const [playerHp, setPlayerHp] = useState(currentHero.maxHp)
+  const [beastHp, setBeastHp] = useState(initialEnemy.maxHp)
+  const [beastMaxHp, setBeastMaxHp] = useState(initialEnemy.maxHp)
   const [gameState, setGameState] = useState<GameState>("playing")
   const [feedback, setFeedback] = useState<{ type: "success" | "error", message: string } | null>(null)
   const [heroState, setHeroState] = useState<CharacterState>("idle")
   const [demonState, setDemonState] = useState<CharacterState>("idle")
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
+  const [streak, setStreak] = useState(0)
   const [wrongAnswers, setWrongAnswers] = useState<{ word: string, meaning: string }[]>([])
   const [timeLeft, setTimeLeft] = useState(15)
   const [maxTime, setMaxTime] = useState(15)
 
-  // Refs to track actual HP values for side-effect logic (avoids React Strict Mode double-call issues)
-  const beastHpRef = useRef(getEnemyStats(1).maxHp)
-  const playerHpRef = useRef(ASSETS.hero.maxHp)
+  // Current Enemy info
+  const enemyStats: EnemyStatConfig = useMemo(() => getEnemyStats(level), [level])
+  const currentEnemy: CharacterData = enemyStats.enemyData
+
+  // Refs to track actual HP values for side-effect logic
+  const beastHpRef = useRef(initialEnemy.maxHp)
+  const playerHpRef = useRef(currentHero.maxHp)
   const correctCountRef = useRef(0)
   const wrongCountRef = useRef(0)
+  const streakRef = useRef(0)
   const levelCorrectCountRef = useRef(0)
   const levelWrongCountRef = useRef(0)
   const timeLeftRef = useRef(15)
@@ -52,6 +76,15 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
 
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
+
+  const setHeroId = useCallback((id: string) => {
+    if (HEROES[id]) {
+      setHeroIdState(id)
+      const selected = HEROES[id]
+      playerHpRef.current = selected.maxHp
+      setPlayerHp(selected.maxHp)
+    }
+  }, [])
 
   const setupTurn = useCallback((list: Vocabulary[], currentLevel: number) => {
     const word = list[Math.floor(Math.random() * list.length)]
@@ -111,7 +144,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
         if (onAlert) onAlert("Failed to save session statistics.")
       }
     }
-  }, [supabase, mode])
+  }, [supabase, mode, onAlert])
 
   const loadGame = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -169,7 +202,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     
     // Insert initial session immediately on game start
     saveSession("playing", 1, 0, 0, [])
-  }, [supabase, router, mode, setupTurn, saveSession])
+  }, [supabase, router, mode, setupTurn, saveSession, onAlert])
 
   const startNextLevel = useCallback((vocabList: Vocabulary[]) => {
     levelCorrectCountRef.current = 0
@@ -179,19 +212,21 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
 
     setLevel(prev => {
       const newLevel = prev + 1
-      const stats = getEnemyStats(newLevel)
-      beastHpRef.current = stats.maxHp
-      setBeastHp(stats.maxHp)
-      setBeastMaxHp(stats.maxHp)
+      const nextStats = getEnemyStats(newLevel)
+      beastHpRef.current = nextStats.maxHp
+      setBeastHp(nextStats.maxHp)
+      setBeastMaxHp(nextStats.maxHp)
       return newLevel
     })
-    playerHpRef.current = ASSETS.hero.maxHp
-    setPlayerHp(ASSETS.hero.maxHp)
+
+    const hero = heroRef.current
+    playerHpRef.current = hero.maxHp
+    setPlayerHp(hero.maxHp)
     setGameState("playing")
     setHeroState("idle")
     setDemonState("idle")
     setFeedback(null)
-    const newLevel = level + 1 // Use next level value
+    const newLevel = level + 1
     setupTurn(vocabList, newLevel)
   }, [setupTurn, level])
 
@@ -199,17 +234,40 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     if (gameState !== "playing" || feedback || !currentWord) return
 
     const currentEnemyStats = getEnemyStats(level)
+    const hero = heroRef.current
+    const baseDamage = hero.damage || HERO_DAMAGE
 
     if (answer === currentWord?.meaning) {
       correctCountRef.current += 1
       levelCorrectCountRef.current += 1
+      streakRef.current += 1
       setCorrectCount(correctCountRef.current)
-      setFeedback({ type: "success", message: "Correct! You strike the beast!" })
-      setHeroState("attack")
+      setStreak(streakRef.current)
+
+      // Combo scaling
+      const isCritical = streakRef.current >= 3
+      const damageMultiplier = isCritical ? 1.5 : 1
+      const finalHeroDamage = Math.round(baseDamage * damageMultiplier)
+
+      // Determine hero attack animation
+      let attackAnim: CharacterState = "attack"
+      if (streakRef.current >= 4 && hero.animations.attack3) {
+        attackAnim = "attack3"
+      } else if (streakRef.current >= 2 && hero.animations.attack2) {
+        attackAnim = "attack2"
+      }
+
+      setFeedback({ 
+        type: "success", 
+        message: isCritical 
+          ? `COMBO x${streakRef.current}! Critical Strike dealt ${finalHeroDamage} dmg!` 
+          : `Correct! You strike ${currentEnemyStats.enemyData.name} for ${finalHeroDamage} dmg!` 
+      })
+      setHeroState(attackAnim)
 
       setTimeout(() => {
         setHeroState("idle")
-        const newBeastHp = Math.max(0, beastHpRef.current - HERO_DAMAGE)
+        const newBeastHp = Math.max(0, beastHpRef.current - finalHeroDamage)
         beastHpRef.current = newBeastHp
         setBeastHp(newBeastHp)
 
@@ -219,9 +277,6 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
           setHeroState("win")
           setDemonState("lose")
 
-          // Update ref for potential unmount save for next level
-          // We DO NOT saveSession here anymore to avoid inserting a row per level won.
-          // We only track the cumulative stats until the game ends (player loses or unmounts).
           sessionDataRef.current = { 
             level: level + 1, 
             correct: correctCountRef.current, 
@@ -246,6 +301,8 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     } else {
       wrongCountRef.current += 1
       levelWrongCountRef.current += 1
+      streakRef.current = 0
+      setStreak(0)
       setWrongCount(wrongCountRef.current)
       wrongAnswersRef.current.push(currentWord!.word)
       levelWrongAnswersRef.current.push(currentWord!.word)
@@ -308,10 +365,9 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     }
   }, [gameState, feedback, loading, handleAnswer])
 
-  // Save on cleanup if not saved yet (e.g., user leaves early)
+  // Save on cleanup if not saved yet
   useEffect(() => {
     return () => {
-      // Ensure the final state is saved on unmount if a session exists
       if (sessionIdRef.current) {
         const { result, level: finalLevel } = sessionDataRef.current
         const finalWrongWords = Array.from(new Set(wrongAnswersRef.current))
@@ -322,14 +378,16 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
 
   const resetGame = useCallback(() => {
     setLevel(1)
+    const hero = heroRef.current
     const stats = getEnemyStats(1)
     beastHpRef.current = stats.maxHp
-    playerHpRef.current = ASSETS.hero.maxHp
+    playerHpRef.current = hero.maxHp
     correctCountRef.current = 0
     wrongCountRef.current = 0
+    streakRef.current = 0
     levelCorrectCountRef.current = 0
     levelWrongCountRef.current = 0
-    setPlayerHp(ASSETS.hero.maxHp)
+    setPlayerHp(hero.maxHp)
     setBeastHp(stats.maxHp)
     setBeastMaxHp(stats.maxHp)
     setGameState("playing")
@@ -338,6 +396,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     setFeedback(null)
     setCorrectCount(0)
     setWrongCount(0)
+    setStreak(0)
     setWrongAnswers([])
     setTimeLeft(15)
     setMaxTime(15)
@@ -358,6 +417,7 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     loading,
     level,
     playerHp,
+    playerMaxHp: currentHero.maxHp,
     beastHp,
     beastMaxHp,
     gameState,
@@ -366,9 +426,17 @@ export function useGameEngine(mode: GameMode, onAlert?: (message: string) => voi
     demonState,
     correctCount,
     wrongCount,
+    streak,
     wrongAnswers,
     timeLeft,
     maxTime,
+    // Character & Enemy
+    heroId,
+    setHeroId,
+    currentHero,
+    currentEnemy,
+    enemyStats,
+    availableHeroes: Object.values(HEROES),
     // Actions
     loadGame,
     handleAnswer,

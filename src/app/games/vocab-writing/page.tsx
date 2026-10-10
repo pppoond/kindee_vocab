@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Timer, Trophy, RotateCcw, Clock, Pencil, Send } from "lucide-react"
+import { ArrowLeft, Timer, Trophy, RotateCcw, Clock, Pencil, Send, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useVocabWritingEngine, TIME_OPTIONS } from "@/hooks/useVocabWritingEngine"
 import { ReviewWrongAnswers } from "@/components/review-wrong-answers"
@@ -86,8 +86,10 @@ export default function VocabWritingGame() {
               <Pencil className="h-3.5 w-3.5" />
               Vocab Writing
             </Badge>
-            <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-xs">
-              ✅ {correctCount} / ❌ {wrongCount}
+            <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-xs flex items-center gap-2">
+              <span className="flex items-center gap-1 text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" /> {correctCount}</span>
+              <span className="text-zinc-600">/</span>
+              <span className="flex items-center gap-1 text-rose-400"><XCircle className="w-3.5 h-3.5" /> {wrongCount}</span>
             </Badge>
           </div>
         )}
